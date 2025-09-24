@@ -768,28 +768,38 @@ indSelect.addEventListener('change', () => { updateBuretteUI(); drawPHGraph(); }
   el.addEventListener('input', applyEndpoint);
   el.addEventListener('change', applyEndpoint);
 });
+<script>
+// React to slider & indicator changes
+burSlider.addEventListener('input', () => { updateBuretteUI(); drawPHGraph(); });
+indSelect.addEventListener('change', () => { updateBuretteUI(); drawPHGraph(); });
+
+// Concentration controls (acid/base/flask volume & source toggle)
+[concAcid, concBase, flaskVol, useConcEP].forEach(el => {
+  el.addEventListener('input', applyEndpoint);
+  el.addEventListener('change', applyEndpoint);
+});
 
 // If the endpoint (mean) changes later, re-read it
 const meanEl = document.getElementById('tit-mean');
 if (meanEl) {
-  // Mutation observer so if you edit the table and mean updates, the endpoint follows
- const obs = new MutationObserver(() => {
-  if (!useConcEP.checked) {
-    ENDPOINT = getEndpoint();
-    endOut.textContent = ENDPOINT.toFixed(2);
-    updateBuretteUI();
-    drawPHGraph();
-  }
-});
-
+  const obs = new MutationObserver(() => {
+    if (!useConcEP.checked) {
+      ENDPOINT = getEndpoint();
+      if (endOut) endOut.textContent = ENDPOINT.toFixed(2);
+      updateBuretteUI();
+      drawPHGraph();
+    }
+  });
+  obs.observe(meanEl, { childList: true });
+}
 
 // Initial paint
 updateBuretteUI();
 updateTapVisual(parseInt(flowSlider?.value || 0, 10));
-applyEndpoint();   // sets ENDPOINT from concs (or mean if unchecked) and updates UI
-drawPHGraph();     // draws the initial pH–volume curve and marker
+applyEndpoint();        // sets ENDPOINT from concs (or mean if unchecked) and updates UI
+drawPHGraph();          // draws initial pH–volume curve + marker
 
-  // Create a ripple inside the flask at viewport coords (x,y)
+// Create a ripple inside the flask at viewport coords (x,y)
 function spawnRipple(x, y) {
   const flaskEl = document.getElementById('flask');
   if (!flaskEl) return;
@@ -808,7 +818,11 @@ function spawnRipple(x, y) {
   // Clean up after animation
   setTimeout(() => rip.remove(), 650);
 }
-window.addEventListener('resize', () => { if (streamEl && streamEl.style.opacity === '1') positionStream(); });
 
+// Keep stream aligned if window resizes
+window.addEventListener('resize', () => {
+  if (streamEl && streamEl.style.opacity === '1') positionStream();
+});
 </script>
+</body>
 </html>
