@@ -16,6 +16,27 @@ h2 { margin-top: 0; color: #003366; }
 .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
 .teacher-controls { background: #eef6ff; border: 1px solid #99c2ff; padding: 10px; margin-top: 15px; border-radius: 6px; }
 .graph { border: 2px dotted #666; height: 150px; border-radius: 6px; text-align: center; line-height: 150px; color: #999; }
+/* --- Titration visuals --- */
+.bench { display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; }
+.panel { flex: 1 1 320px; background:#fafafa; border:2px dashed #aaa; border-radius:8px; padding:12px; }
+
+.burette-wrap { position:relative; height:260px; width:80px; margin:6px auto; border:2px solid #999; border-radius:6px; background:linear-gradient(#e9f3ff,#ffffff); }
+.burette-scale { position:absolute; left:8px; top:6px; bottom:6px; width:10px; background:repeating-linear-gradient(to bottom, transparent 0 18px, #999 18px 19px); opacity:.7; }
+.burette-fill { position:absolute; right:0; bottom:0; width:100%; background:#cfe3ff; border-bottom-left-radius:4px; border-bottom-right-radius:4px; }
+
+.burette-tap { position:absolute; bottom:-16px; left:50%; transform:translateX(-50%); width:14px; height:14px; background:#666; border-radius:50%; }
+.burette-spout { position:absolute; bottom:-22px; left:50%; transform:translateX(-50%); width:2px; height:20px; background:#666; }
+
+.flask { position:relative; width:240px; height:200px; margin:10px auto; border:2px solid #666; border-radius:0 0 140px 140px / 0 0 60% 60%; overflow:hidden; background:#fff; }
+.liquid { position:absolute; left:0; right:0; bottom:0; height:35%; background:#ffd; transition:background-color .35s ease, height .35s ease; }
+.endpoint-bar { height:10px; background:repeating-linear-gradient(90deg,#ccc 0 10px,#eee 10px 20px); border-radius:6px; margin:8px 0; }
+.dot { display:inline-block; min-width:12px; min-height:12px; border-radius:50%; border:1px solid #999; vertical-align:middle; margin-right:6px; }
+
+.drop { position:absolute; top:0; left:50%; transform:translateX(-50%); width:10px; height:14px; background:#cfe3ff; border-radius:50% 50% 60% 60%/50% 50% 70% 70%; animation:fall .8s linear forwards; }
+@keyframes fall { 0% { top:0; opacity:1; } 85% { top:220px; opacity:1; } 100% { top:230px; opacity:0; } }
+
+.readout { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background:#fff; border:1px solid #ddd; padding:4px 8px; border-radius:6px; display:inline-block; }
+.ctrl-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 </style>
 </head>
 <body>
@@ -92,7 +113,54 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
 
 <div class="section">
 <h3>Run Titration</h3>
-<div class="slider">[Burette volume slider → drip animation]</div>
+
+<div class="bench">
+  <!-- Left: Burette & controls -->
+  <div class="panel" style="max-width:360px;">
+    <div><b>Indicator:</b>
+      <select id="ind-select">
+        <option value="phenolphthalein" selected>Phenolphthalein (pink → colourless)</option>
+        <option value="methylorange">Methyl orange (red → orange → yellow)</option>
+      </select>
+    </div>
+
+    <div class="endpoint-bar" title="Endpoint marker"></div>
+
+    <div class="ctrl-row" style="margin:6px 0;">
+      <span class="dot" id="dot-color" style="background:#ffc0de;"></span>
+      Flask colour • pH (approx): <span class="readout" id="ph-read">~13</span>
+    </div>
+
+    <div class="burette-wrap">
+      <div class="burette-scale"></div>
+      <div class="burette-fill" id="bur-fill" style="height: 85%;"></div>
+      <div class="burette-tap"></div>
+      <div class="burette-spout"></div>
+      <!-- falling drops will be injected here -->
+    </div>
+
+    <div style="margin-top:8px;">
+      <label for="bur-vol"><b>Burette volume added</b> (cm³): <span class="readout" id="bur-vol-out">0.00</span></label>
+      <input id="bur-vol" type="range" min="0" max="30" value="0" step="0.05" style="width:100%;">
+    </div>
+
+    <div class="ctrl-row" style="margin-top:6px;">
+      <button id="drip-1">Drip 1 drop (≈0.05 cm³)</button>
+      <button id="reset-bur">Reset</button>
+      <span>Endpoint (from table mean): <span class="readout" id="endpoint-out">—</span> cm³</span>
+    </div>
+  </div>
+
+  <!-- Right: Flask visual -->
+  <div class="panel" style="max-width:340px; text-align:center;">
+    <div><b>Flask (25.0 cm³ base + indicator)</b></div>
+    <div class="flask" id="flask">
+      <div class="liquid" id="liquid"></div>
+    </div>
+    <div>Colour at endpoint depends on indicator choice.</div>
+  </div>
+</div>
+
 <h3>Data Table</h3>
 <table class="table" id="tit-table">
   <tr><th>Trial</th><th>Initial (cm³)</th><th>Final (cm³)</th><th>Titre (cm³)</th></tr>
@@ -164,5 +232,122 @@ document.querySelectorAll('.tit-in').forEach(inp => {
   inp.addEventListener('input', recalcTitration);
 });
 recalcTitration();
+/* ===== Titration: burette drip + colour-changing flask ===== */
+
+// Grab controls
+const burSlider = document.getElementById('bur-vol');
+const burOut = document.getElementById('bur-vol-out');
+const burFill = document.getElementById('bur-fill');
+const flask = document.getElementById('flask');
+const liquid = document.getElementById('liquid');
+const endOut = document.getElementById('endpoint-out');
+const phOut = document.getElementById('ph-read');
+const dotColor = document.getElementById('dot-color');
+const dripBtn = document.getElementById('drip-1');
+const resetBtn = document.getElementById('reset-bur');
+const indSelect = document.getElementById('ind-select');
+
+// Use the mean from your table as the endpoint (nice link!)
+function getEndpoint() {
+  const el = document.getElementById('tit-mean');
+  const v = el ? parseFloat(el.textContent) : 23.50;
+  return isFinite(v) ? v : 23.50;
+}
+
+let ENDPOINT = getEndpoint();
+endOut.textContent = ENDPOINT.toFixed(2);
+
+// Simple pH approximation for strong acid/strong base titration curve.
+// We just want the "S-shape" to teach the idea; not lab-accurate.
+function approxPH(added) {
+  // Map 0..(2*endpoint) into ~13..1 with a steep switch around endpoint
+  const e = ENDPOINT;
+  const x = (added - e) / (e * 0.08);  // 8% of endpoint makes a steep region
+  const sig = 1 / (1 + Math.exp(-x));  // 0..1
+  const ph = 13 - sig * 12;            // ~13 high, ~1 low
+  return Math.max(1, Math.min(13, ph));
+}
+
+// Colour model per indicator
+function colourForIndicator(ph, indicator) {
+  if (indicator === 'phenolphthalein') {
+    // Pink above ~8.2, colourless below ~8.2
+    if (ph >= 10.0) return { bg:'#ffc0de', dot:'#ffc0de' };        // strong pink
+    if (ph >= 8.2)  return { bg:'#ffe0ee', dot:'#ffd2e6' };        // pale pink
+    return { bg:'#f7f7f7', dot:'#f7f7f7' };                        // colourless
+  } else {
+    // Methyl orange: red (<3.1), orange (3.1..4.4), yellow (>4.4)
+    if (ph < 3.1)   return { bg:'#ffb3a8', dot:'#ff8f80' };        // red-ish
+    if (ph < 4.4)   return { bg:'#ffd19a', dot:'#ffb347' };        // orange
+    return { bg:'#fff7a6', dot:'#ffe34d' };                        // yellow
+  }
+}
+
+// Update the whole visual state
+function updateBuretteUI() {
+  const v = parseFloat(burSlider.value);
+  burOut.textContent = v.toFixed(2);
+
+  // Burette fill: 0 cm³ added = full, max = emptier
+  const max = parseFloat(burSlider.max);
+  const fillPct = Math.max(0, 100 - (v / max) * 100);
+  burFill.style.height = fillPct + '%';
+
+  // Liquid height grows a little as you add volume (looks lively)
+  const baseHeight = 35; // %
+  const extra = Math.min(20, (v / ENDPOINT) * 20);
+  liquid.style.height = (baseHeight + extra) + '%';
+
+  // pH & colour
+  const ph = approxPH(v);
+  phOut.textContent = '~' + ph.toFixed(1);
+  const col = colourForIndicator(ph, indSelect.value);
+  liquid.style.backgroundColor = col.bg;
+  dotColor.style.backgroundColor = col.dot;
+}
+
+// Create a falling drop animation
+function spawnDrop() {
+  const drop = document.createElement('div');
+  drop.className = 'drop';
+  // place it under the spout
+  const wrap = document.querySelector('.burette-wrap');
+  wrap.appendChild(drop);
+  setTimeout(() => drop.remove(), 900);
+}
+
+// Buttons
+dripBtn.addEventListener('click', () => {
+  const step = parseFloat(burSlider.step) || 0.05;
+  const newV = Math.min(parseFloat(burSlider.max), parseFloat(burSlider.value) + step);
+  burSlider.value = newV.toString();
+  spawnDrop();
+  updateBuretteUI();
+});
+
+resetBtn.addEventListener('click', () => {
+  burSlider.value = '0';
+  updateBuretteUI();
+});
+
+// React to slider & indicator changes
+burSlider.addEventListener('input', updateBuretteUI);
+indSelect.addEventListener('change', updateBuretteUI);
+
+// If the endpoint (mean) changes later, re-read it
+const meanEl = document.getElementById('tit-mean');
+if (meanEl) {
+  // Mutation observer so if you edit the table and mean updates, the endpoint follows
+  const obs = new MutationObserver(() => {
+    ENDPOINT = getEndpoint();
+    endOut.textContent = ENDPOINT.toFixed(2);
+    updateBuretteUI();
+  });
+  obs.observe(meanEl, { childList: true });
+}
+
+// Initial paint
+updateBuretteUI();
+
 </script>
 </html>
