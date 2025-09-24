@@ -347,7 +347,7 @@ function updateBuretteUI() {
 }
 
 // Create a falling drop animation
-function spawnDrop() {
+function spawnDrop(step = 0.05) {
   // Elements we need
   const spout = document.querySelector('.burette-spout');
   const flaskEl = document.getElementById('flask');
@@ -369,7 +369,12 @@ function spawnDrop() {
   const drop = document.createElement('div');
   drop.className = 'drop';
   document.body.appendChild(drop);
-
+  
+  // Scale drop size with step (so big glugs look larger)
+  const size = Math.min(22, 8 + step * 200); // ~8px at low flow, up to ~22px
+  drop.style.width = size + 'px';
+  drop.style.height = (size * 1.3) + 'px';
+  
   // Start at spout
   drop.style.left = `${startX}px`;
   drop.style.top  = `${startY}px`;
@@ -405,13 +410,19 @@ const holdBtn = document.getElementById('drip-hold');
 let dripTimer = null;
 
 function dripOnce() {
-  const step = parseFloat(burSlider.step) || 0.05;
+  // Base step (≈0.05 cm³) scales with flow rate
+  const rate = Math.max(1, parseInt(flowSlider.value, 10) || 8); // drops/sec
+  const baseStep = 0.05;
+  // Scale factor: 1x at low flow, up to ~3x at max
+  const step = baseStep * (1 + (rate - 1) / 10);
+
   const newV = Math.min(parseFloat(burSlider.max), parseFloat(burSlider.value) + step);
   if (newV === parseFloat(burSlider.value)) return; // at max
   burSlider.value = newV.toString();
-  spawnDrop();
+  spawnDrop(step); // pass the size for visuals
   updateBuretteUI();
 }
+
 
 // Compute + set the interval from the current flow rate
 function setDripIntervalFromRate() {
