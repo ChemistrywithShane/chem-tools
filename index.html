@@ -395,23 +395,20 @@ function endpointFromConc() {
   const Vb = Math.max(0, parseFloat(flaskVol.value));       // cm^3
   return (Cb * Vb) / Ca; // cm^3
 }
-
 function applyEndpoint() {
-  if (useConcEP.checked) {
+  const useBox = (typeof useConcEP !== 'undefined' && useConcEP) ? useConcEP.checked : false;
+  if (useBox) {
     ENDPOINT = endpointFromConc();
-    endOut.textContent = ENDPOINT.toFixed(2);
-    epSource.textContent = 'from concentrations';
+    if (endOut) endOut.textContent = ENDPOINT.toFixed(2);
+    if (epSource) epSource.textContent = 'from concentrations';
   } else {
     ENDPOINT = getEndpoint();
-    endOut.textContent = ENDPOINT.toFixed(2);
-    epSource.textContent = 'from table mean';
+    if (endOut) endOut.textContent = ENDPOINT.toFixed(2);
+    if (epSource) epSource.textContent = 'from table mean';
   }
   updateBuretteUI();
-  drawPHGraph(); // keep graph in sync
+  if (typeof drawPHGraph === 'function') drawPHGraph();
 }
-
-let ENDPOINT = getEndpoint();
-endOut.textContent = ENDPOINT.toFixed(2);
 
 // Simple pH approximation for strong acid/strong base titration curve.
 // We just want the "S-shape" to teach the idea; not lab-accurate.
