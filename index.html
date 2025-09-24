@@ -96,33 +96,6 @@ h2 { margin-top: 0; color: #003366; }
 .burette-spout {
   transition: width .18s ease, opacity .18s ease;
 }
- <!-- Chemistry setup -->
-<div class="ctrl-row" style="margin:6px 0; gap:14px;">
-  <label>Acid in burette:
-    <input id="conc-acid" type="number" step="0.01" value="0.10" style="width:80px;"> mol&nbsp;dm⁻³
-  </label>
-</div>
-<div class="ctrl-row" style="gap:14px;">
-  <label>Base in flask:
-    <input id="conc-base" type="number" step="0.01" value="0.10" style="width:80px;"> mol&nbsp;dm⁻³
-  </label>
-  <label>Flask vol:
-    <input id="flask-vol" type="number" step="0.1" value="25.0" style="width:80px;"> cm³
-  </label>
-</div>
-
-<div class="ctrl-row" style="margin:6px 0;">
-  <label>
-    <input id="use-conc-endpoint" type="checkbox" checked>
-    Use concentrations to set endpoint (overrides table mean)
-  </label>
-</div>
-
-<div class="ctrl-row" style="margin:4px 0;">
-  <span>Endpoint: <span class="readout" id="endpoint-out">—</span> cm³
-    <small style="opacity:.7">(<span id="endpoint-source">from concentrations</span>)</small>
-  </span>
-</div>
 
 </style>
 </head>
@@ -768,7 +741,7 @@ indSelect.addEventListener('change', () => { updateBuretteUI(); drawPHGraph(); }
   el.addEventListener('input', applyEndpoint);
   el.addEventListener('change', applyEndpoint);
 });
-<script>
+
 // React to slider & indicator changes
 burSlider.addEventListener('input', () => { updateBuretteUI(); drawPHGraph(); });
 indSelect.addEventListener('change', () => { updateBuretteUI(); drawPHGraph(); });
