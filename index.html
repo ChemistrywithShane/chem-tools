@@ -62,6 +62,17 @@ h2 { margin-top: 0; color: #003366; }
 @keyframes ripple {
   to { transform: translate(-50%, -50%) scale(3.6); opacity: 0; }
 }
+/* Continuous stream from spout to liquid */
+.stream {
+  position: fixed;      /* viewport coords like .drop */
+  width: 6px;
+  background: linear-gradient(to bottom, rgba(180,210,255,0.9), rgba(180,210,255,0.4));
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
 
 </style>
 </head>
@@ -280,6 +291,13 @@ const resetBtn = document.getElementById('reset-bur');
 const indSelect = document.getElementById('ind-select');
 const flowSlider = document.getElementById('flow-rate');
 const flowOut = document.getElementById('flow-out');
+// --- flow / pour constants ---
+const CONT_THRESHOLD = 15;   // ≥ this rate = continuous stream
+const BASE_STEP = 0.05;      // ~0.05 cm³ per “drop” at low flow
+
+// --- continuous pour support ---
+let streamEl = null;  // the DOM element for the visible stream
+let pourRAF = null;   // requestAnimationFrame handle while pouring
 
 // Use the mean from your table as the endpoint (nice link!)
 function getEndpoint() {
@@ -344,6 +362,41 @@ function updateBuretteUI() {
   const col = colourForIndicator(ph, indSelect.value);
   liquid.style.backgroundColor = col.bg;
   dotColor.style.backgroundColor = col.dot;
+}
+  // Create the (single) stream element if needed
+function ensureStreamEl() {
+  if (streamEl) return streamEl;
+  streamEl = document.createElement('div');
+  streamEl.className = 'stream';
+  document.body.appendChild(streamEl);
+  return streamEl;
+}
+
+// Position the stream from the spout tip down to the current liquid surface
+function positionStream() {
+  const spout = document.querySelector('.burette-spout');
+  const flaskEl = document.getElementById('flask');
+  const liquidEl = document.getElementById('liquid');
+  if (!spout || !flaskEl || !liquidEl) return;
+
+  const sp = spout.getBoundingClientRect();
+  const liq = liquidEl.getBoundingClientRect();
+
+  const x = sp.left + sp.width / 2;
+  const yTop = sp.bottom;
+  const yBottom = liq.top;
+
+  const el = ensureStreamEl();
+  el.style.left = `${x - 3}px`;                  // center a 6px wide stream
+  el.style.top = `${yTop}px`;
+  el.style.height = `${Math.max(6, yBottom - yTop)}px`;
+}
+
+// Show/hide the stream with a quick fade
+function showStream(show) {
+  ensureStreamEl();
+  positionStream();
+  streamEl.style.opacity = show ? 1 : 0;
 }
 
 // Create a falling drop animation
@@ -410,18 +463,16 @@ const holdBtn = document.getElementById('drip-hold');
 let dripTimer = null;
 
 function dripOnce() {
-  // Base step (≈0.05 cm³) scales with flow rate
-  const rate = Math.max(1, parseInt(flowSlider.value, 10) || 8); // drops/sec
-  const baseStep = 0.05;
-  // Scale factor: 1x at low flow, up to ~3x at max
-  const step = baseStep * (1 + (rate - 1) / 10);
+  const rate = Math.max(1, parseInt(flowSlider.value, 10) || 8);        // drops/sec
+  const step = BASE_STEP * (1 + (rate - 1) / 10);                        // bigger glugs at higher rate
 
   const newV = Math.min(parseFloat(burSlider.max), parseFloat(burSlider.value) + step);
   if (newV === parseFloat(burSlider.value)) return; // at max
   burSlider.value = newV.toString();
-  spawnDrop(step); // pass the size for visuals
+  spawnDrop(step);                                                      // pass size for visuals
   updateBuretteUI();
 }
+
 
 
 // Compute + set the interval from the current flow rate
@@ -433,13 +484,60 @@ function setDripIntervalFromRate() {
 }
 
 function startHold() {
-  setDripIntervalFromRate(); // start (or retune) with current slider value
+  const rate = Math.max(1, parseInt(flowSlider.value, 10) || 8);
+
+  // High flow → continuous stream using requestAnimationFrame
+  if (rate >= CONT_THRESHOLD) {
+    if (pourRAF) return;            // already pouring
+    showStream(true);
+
+    let last = performance.now();
+    const stepPerDrop = BASE_STEP * (1 + (rate - 1) / 10);
+    const dropsPerSec = rate;
+
+    const tick = (now) => {
+      const dt = (now - last) / 1000;   // seconds since last frame
+      last = now;
+
+      // Volume increment this frame
+      const dv = dropsPerSec * stepPerDrop * dt;
+      const vNow = parseFloat(burSlider.value);
+      const vMax = parseFloat(burSlider.max);
+      const vNew = Math.min(vMax, vNow + dv);
+
+      burSlider.value = vNew.toFixed(3);
+      updateBuretteUI();
+
+      // Keep the stream aligned to spout → liquid (with tiny jitter)
+      positionStream();
+      if (streamEl) {
+        const j = (Math.random() - 0.5) * 2; // ±1 px wobble
+        streamEl.style.transform = `translateX(${j}px)`;
+      }
+
+      if (vNew >= vMax || !pourRAF) {
+        stopHold();                   // stop if maxed or cancelled
+        return;
+      }
+      pourRAF = requestAnimationFrame(tick);
+    };
+
+    pourRAF = requestAnimationFrame(tick);
+    return;
+  }
+
+  // Low/medium flow → discrete drops via interval
+  setDripIntervalFromRate();
 }
+
 function stopHold() {
-  if (!dripTimer) return;
-  clearInterval(dripTimer);
-  dripTimer = null;
+  // stop discrete mode
+  if (dripTimer) { clearInterval(dripTimer); dripTimer = null; }
+  // stop continuous mode
+  if (pourRAF) { cancelAnimationFrame(pourRAF); pourRAF = null; }
+  showStream(false);
 }
+
 
 // Mouse + touch support
 holdBtn.addEventListener('mousedown', startHold);
@@ -451,8 +549,15 @@ holdBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startHold();
 // If the flow slider changes while holding, retune the interval live
 flowSlider.addEventListener('input', () => {
   updateFlowLabel();
-  if (dripTimer) setDripIntervalFromRate();
+  const rate = Math.max(1, parseInt(flowSlider.value, 10) || 8);
+
+  // If we're currently holding (either mode), switch modes on the fly
+  if (dripTimer || pourRAF) {
+    stopHold();
+    startHold();
+  }
 });
+
 
 resetBtn.addEventListener('click', () => {
   burSlider.value = '0';
@@ -497,6 +602,7 @@ function spawnRipple(x, y) {
   // Clean up after animation
   setTimeout(() => rip.remove(), 650);
 }
+window.addEventListener('resize', () => { if (streamEl && streamEl.style.opacity === '1') positionStream(); });
 
 </script>
 </html>
