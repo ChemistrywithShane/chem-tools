@@ -73,7 +73,30 @@ h2 { margin-top: 0; color: #003366; }
   opacity: 0;
   transition: opacity .15s ease;
 }
+ /* --- Tap animation (open/close) --- */
+.burette-tap {
+  transition: transform .18s ease;        /* smooth rotate */
+}
 
+/* add a little handle on the tap to make movement obvious */
+.burette-tap::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  width: 24px;           /* handle length */
+  height: 6px;
+  border-radius: 3px;
+  background: #5a5a5a;
+  transform-origin: left center;
+  transform: translateX(-50%);
+}
+
+/* spout gets a bit thicker when tap is open */
+.burette-spout {
+  transition: width .18s ease, opacity .18s ease;
+}
+ 
 </style>
 </head>
 <body>
@@ -325,6 +348,23 @@ function updateFlowLabel() {
 }
 updateFlowLabel();
 flowSlider.addEventListener('input', updateFlowLabel);
+function updateTapVisual(rate) {
+  const tap = document.querySelector('.burette-tap');
+  const spout = document.querySelector('.burette-spout');
+  if (!tap || !spout) return;
+
+  // Map rate (1..20) to angle (0..85°). Below ~1 = closed.
+  const r = Math.max(0, Math.min(20, parseInt(rate || 0, 10)));
+  const angle = (r / 20) * 85;                      // degrees
+
+  // Keep existing translateX(-50%) and add rotate()
+  tap.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+
+  // Spout looks "more open" with slightly larger width and higher opacity
+  const w = 2 + (r / 20) * 3;                       // 2px → 5px
+  spout.style.width = `${w}px`;
+  spout.style.opacity = r > 0 ? 1 : 0.8;
+}
 
 // Colour model per indicator
 function colourForIndicator(ph, indicator) {
@@ -485,7 +525,7 @@ function setDripIntervalFromRate() {
 
 function startHold() {
   const rate = Math.max(1, parseInt(flowSlider.value, 10) || 8);
-
+  updateTapVisual(rate);
   // High flow → continuous stream using requestAnimationFrame
   if (rate >= CONT_THRESHOLD) {
     if (pourRAF) return;            // already pouring
@@ -531,11 +571,12 @@ function startHold() {
 }
 
 function stopHold() {
-  // stop discrete mode
+  // stop timers/RAF ...
   if (dripTimer) { clearInterval(dripTimer); dripTimer = null; }
-  // stop continuous mode
   if (pourRAF) { cancelAnimationFrame(pourRAF); pourRAF = null; }
   showStream(false);
+
+  updateTapVisual(0);                   // <--- closes the tap
 }
 
 
@@ -550,6 +591,7 @@ holdBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startHold();
 flowSlider.addEventListener('input', () => {
   updateFlowLabel();
   const rate = Math.max(1, parseInt(flowSlider.value, 10) || 8);
+  updateTapVisual(rate);                // <--- add this line
 
   // If we're currently holding (either mode), switch modes on the fly
   if (dripTimer || pourRAF) {
@@ -557,6 +599,7 @@ flowSlider.addEventListener('input', () => {
     startHold();
   }
 });
+
 
 
 resetBtn.addEventListener('click', () => {
@@ -582,6 +625,7 @@ if (meanEl) {
 
 // Initial paint
 updateBuretteUI();
+updateTapVisual(parseInt(flowSlider?.value || 0, 10));
 
   // Create a ripple inside the flask at viewport coords (x,y)
 function spawnRipple(x, y) {
