@@ -96,7 +96,34 @@ h2 { margin-top: 0; color: #003366; }
 .burette-spout {
   transition: width .18s ease, opacity .18s ease;
 }
- 
+ <!-- Chemistry setup -->
+<div class="ctrl-row" style="margin:6px 0; gap:14px;">
+  <label>Acid in burette:
+    <input id="conc-acid" type="number" step="0.01" value="0.10" style="width:80px;"> mol&nbsp;dm⁻³
+  </label>
+</div>
+<div class="ctrl-row" style="gap:14px;">
+  <label>Base in flask:
+    <input id="conc-base" type="number" step="0.01" value="0.10" style="width:80px;"> mol&nbsp;dm⁻³
+  </label>
+  <label>Flask vol:
+    <input id="flask-vol" type="number" step="0.1" value="25.0" style="width:80px;"> cm³
+  </label>
+</div>
+
+<div class="ctrl-row" style="margin:6px 0;">
+  <label>
+    <input id="use-conc-endpoint" type="checkbox" checked>
+    Use concentrations to set endpoint (overrides table mean)
+  </label>
+</div>
+
+<div class="ctrl-row" style="margin:4px 0;">
+  <span>Endpoint: <span class="readout" id="endpoint-out">—</span> cm³
+    <small style="opacity:.7">(<span id="endpoint-source">from concentrations</span>)</small>
+  </span>
+</div>
+
 </style>
 </head>
 <body>
@@ -185,6 +212,33 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
     </div>
 
     <div class="endpoint-bar" title="Endpoint marker"></div>
+    <!-- Chemistry setup -->
+<div class="ctrl-row" style="margin:6px 0; gap:14px;">
+  <label>Acid in burette:
+    <input id="conc-acid" type="number" step="0.01" value="0.10" style="width:80px;"> mol&nbsp;dm⁻³
+  </label>
+</div>
+<div class="ctrl-row" style="gap:14px;">
+  <label>Base in flask:
+    <input id="conc-base" type="number" step="0.01" value="0.10" style="width:80px;"> mol&nbsp;dm⁻³
+  </label>
+  <label>Flask vol:
+    <input id="flask-vol" type="number" step="0.1" value="25.0" style="width:80px;"> cm³
+  </label>
+</div>
+
+<div class="ctrl-row" style="margin:6px 0;">
+  <label>
+    <input id="use-conc-endpoint" type="checkbox" checked>
+    Use concentrations to set endpoint (overrides table mean)
+  </label>
+</div>
+
+<div class="ctrl-row" style="margin:4px 0;">
+  <span>Endpoint: <span class="readout" id="endpoint-out">—</span> cm³
+    <small style="opacity:.7">(<span id="endpoint-source">from concentrations</span>)</small>
+  </span>
+</div>
 
     <div class="ctrl-row" style="margin:6px 0;">
       <span class="dot" id="dot-color" style="background:#ffc0de;"></span>
@@ -314,6 +368,12 @@ const resetBtn = document.getElementById('reset-bur');
 const indSelect = document.getElementById('ind-select');
 const flowSlider = document.getElementById('flow-rate');
 const flowOut = document.getElementById('flow-out');
+const concAcid   = document.getElementById('conc-acid');   // mol dm^-3
+const concBase   = document.getElementById('conc-base');   // mol dm^-3
+const flaskVol   = document.getElementById('flask-vol');   // cm^3
+const useConcEP  = document.getElementById('use-conc-endpoint');
+const epSource   = document.getElementById('endpoint-source');
+  
 // --- flow / pour constants ---
 const CONT_THRESHOLD = 15;   // ≥ this rate = continuous stream
 const BASE_STEP = 0.05;      // ~0.05 cm³ per “drop” at low flow
@@ -327,6 +387,27 @@ function getEndpoint() {
   const el = document.getElementById('tit-mean');
   const v = el ? parseFloat(el.textContent) : 23.50;
   return isFinite(v) ? v : 23.50;
+}
+// Endpoint from concentrations (assume 1:1 strong acid/base): Va(cm3) = (Cb * Vb(cm3)) / Ca
+function endpointFromConc() {
+  const Ca = Math.max(0.0001, parseFloat(concAcid.value));  // avoid /0
+  const Cb = Math.max(0, parseFloat(concBase.value));
+  const Vb = Math.max(0, parseFloat(flaskVol.value));       // cm^3
+  return (Cb * Vb) / Ca; // cm^3
+}
+
+function applyEndpoint() {
+  if (useConcEP.checked) {
+    ENDPOINT = endpointFromConc();
+    endOut.textContent = ENDPOINT.toFixed(2);
+    epSource.textContent = 'from concentrations';
+  } else {
+    ENDPOINT = getEndpoint();
+    endOut.textContent = ENDPOINT.toFixed(2);
+    epSource.textContent = 'from table mean';
+  }
+  updateBuretteUI();
+  drawPHGraph(); // keep graph in sync
 }
 
 let ENDPOINT = getEndpoint();
@@ -497,6 +578,7 @@ dripBtn.addEventListener('click', () => {
   burSlider.value = newV.toString();
   spawnDrop();
   updateBuretteUI();
+  drawPHGraph();
 });
 // Hold-to-drip: press and hold to drip repeatedly
 const holdBtn = document.getElementById('drip-hold');
@@ -511,6 +593,7 @@ function dripOnce() {
   burSlider.value = newV.toString();
   spawnDrop(step);                                                      // pass size for visuals
   updateBuretteUI();
+  drawPHGraph();
 }
 
 
@@ -547,6 +630,7 @@ function startHold() {
 
       burSlider.value = vNew.toFixed(3);
       updateBuretteUI();
+      drawPHGraph();
 
       // Keep the stream aligned to spout → liquid (with tiny jitter)
       positionStream();
@@ -606,6 +690,7 @@ resetBtn.addEventListener('click', () => {
   // Reset burette volume
   burSlider.value = '0';
   updateBuretteUI();
+  drawPHGraph();
 
   // Close the tap
   updateTapVisual(0);
@@ -617,24 +702,33 @@ resetBtn.addEventListener('click', () => {
 
 
 // React to slider & indicator changes
-burSlider.addEventListener('input', updateBuretteUI);
-indSelect.addEventListener('change', updateBuretteUI);
+burSlider.addEventListener('input', () => { updateBuretteUI(); drawPHGraph(); });
+indSelect.addEventListener('change', () => { updateBuretteUI(); drawPHGraph(); });
+// Concentration controls (acid/base/flask volume & source toggle)
+[concAcid, concBase, flaskVol, useConcEP].forEach(el => {
+  el.addEventListener('input', applyEndpoint);
+  el.addEventListener('change', applyEndpoint);
+});
 
 // If the endpoint (mean) changes later, re-read it
 const meanEl = document.getElementById('tit-mean');
 if (meanEl) {
   // Mutation observer so if you edit the table and mean updates, the endpoint follows
-  const obs = new MutationObserver(() => {
+ const obs = new MutationObserver(() => {
+  if (!useConcEP.checked) {
     ENDPOINT = getEndpoint();
     endOut.textContent = ENDPOINT.toFixed(2);
     updateBuretteUI();
-  });
-  obs.observe(meanEl, { childList: true });
-}
+    drawPHGraph();
+  }
+});
+
 
 // Initial paint
 updateBuretteUI();
 updateTapVisual(parseInt(flowSlider?.value || 0, 10));
+applyEndpoint();   // sets ENDPOINT from concs (or mean if unchecked) and updates UI
+drawPHGraph();     // draws the initial pH–volume curve and marker
 
   // Create a ripple inside the flask at viewport coords (x,y)
 function spawnRipple(x, y) {
