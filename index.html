@@ -364,7 +364,9 @@ function getEndpoint() {
   const v = el ? parseFloat(el.textContent) : 23.50;
   return isFinite(v) ? v : 23.50;
 }
-  let ENDPOINT = getEndpoint
+  let ENDPOINT = getEndpoint();            // <-- call the function
+if (endOut) endOut.textContent = ENDPOINT.toFixed(2);
+
   
 // Endpoint from concentrations (assume 1:1 strong acid/base): Va(cm3) = (Cb * Vb(cm3)) / Ca
 function endpointFromConc() {
