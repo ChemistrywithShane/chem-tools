@@ -174,10 +174,14 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
       <button id="drip-1">Drip 1 drop (≈0.05 cm³)</button>
       <button id="drip-hold">Hold to drip</button>
       <button id="reset-bur">Reset</button>
-     
       <span>Endpoint (from table mean): <span class="readout" id="endpoint-out">—</span> cm³</span>
     </div>
+    
   </div>
+  <div class="ctrl-row" style="margin-top:6px;">
+  <label for="flow-rate"><b>Flow rate</b> (drops/s): <span class="readout" id="flow-out">8</span></label>
+  <input id="flow-rate" type="range" min="1" max="20" value="8" step="1" style="width:240px;">
+</div>
 
   <!-- Right: Flask visual -->
   <div class="panel" style="max-width:340px; text-align:center;">
@@ -274,6 +278,8 @@ const dotColor = document.getElementById('dot-color');
 const dripBtn = document.getElementById('drip-1');
 const resetBtn = document.getElementById('reset-bur');
 const indSelect = document.getElementById('ind-select');
+const flowSlider = document.getElementById('flow-rate');
+const flowOut = document.getElementById('flow-out');
 
 // Use the mean from your table as the endpoint (nice link!)
 function getEndpoint() {
@@ -295,6 +301,12 @@ function approxPH(added) {
   const ph = 13 - sig * 12;            // ~13 high, ~1 low
   return Math.max(1, Math.min(13, ph));
 }
+function updateFlowLabel() {
+  if (!flowSlider) return;
+  flowOut.textContent = flowSlider.value;
+}
+updateFlowLabel();
+flowSlider.addEventListener('input', updateFlowLabel);
 
 // Colour model per indicator
 function colourForIndicator(ph, indicator) {
