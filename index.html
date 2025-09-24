@@ -28,8 +28,11 @@ h2 { margin-top: 0; color: #003366; }
 
 <div class="section">
 <h3>Equation Input</h3>
-<div class="box">[ Equation box: H<sub>2</sub> + O<sub>2</sub> → H<sub>2</sub>O ] (auto-balance button)</div>
-</div>
+<label for="mm-eq">Type an equation:</label>
+<input id="mm-eq" value="H2 + O2 -> H2O" style="width: 60%; max-width: 480px;">
+<button id="mm-balance-btn">Auto-balance</button>
+<div id="mm-balance-result" class="box" style="margin-top:8px;">Balanced equation will appear here…</div>
+That gives you:
 
 
 <div class="section">
@@ -43,8 +46,17 @@ h2 { margin-top: 0; color: #003366; }
 
 <div class="section">
 <h3>Adjust Quantities</h3>
-<div class="slider">[Reactant slider]</div>
-<div class="slider">[Product slider]</div>
+<div>
+  <label>Reactant amount (g): <b id="mm-reactant-val">50</b></label><br>
+  <input id="mm-reactant" type="range" min="0" max="100" value="50" step="1" style="width:100%;">
+</div>
+<div style="margin-top:10px;">
+  <label>Product target (g): <b id="mm-product-val">40</b></label><br>
+  <input id="mm-product" type="range" min="0" max="100" value="40" step="1" style="width:100%;">
+</div>
+<div id="mm-limit-msg" class="box" style="margin-top:10px;">
+  Move the sliders. I’ll tell you which side is limiting.
+</div>
 <div class="box">Dynamic bar charts update → Limiting Reactant Highlighted</div>
 </div>
 
@@ -81,4 +93,76 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
 <div class="section">
 <h3>Run Titration</h3>
 <div class="slider">[Burette volume slider → drip animation]</div>
+<h3>Data Table</h3>
+<table class="table" id="tit-table">
+  <tr><th>Trial</th><th>Initial (cm³)</th><th>Final (cm³)</th><th>Titre (cm³)</th></tr>
+  <tr>
+    <td>Rough</td>
+    <td><input value="0.00" class="tit-in" data-row="0" data-type="init"></td>
+    <td><input value="23.80" class="tit-in" data-row="0" data-type="final"></td>
+    <td id="tit-titre-0">23.80</td>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td><input value="0.00" class="tit-in" data-row="1" data-type="init"></td>
+    <td><input value="23.40" class="tit-in" data-row="1" data-type="final"></td>
+    <td id="tit-titre-1">23.40</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><input value="0.00" class="tit-in" data-row="2" data-type="init"></td>
+    <td><input value="23.50" class="tit-in" data-row="2" data-type="final"></td>
+    <td id="tit-titre-2">23.50</td>
+  </tr>
+</table>
+<div class="box">Mean (Trials 1 & 2): <b id="tit-mean">23.45</b> cm³</div>
+<script>
+/* === Mole Master: Auto-balance demo === */
+document.getElementById('mm-balance-btn').addEventListener('click', () => {
+  const eq = document.getElementById('mm-eq').value.trim().replace(/\s+/g,'');
+  const out = document.getElementById('mm-balance-result');
+  if (eq === 'H2+O2->H2O' || eq === 'H2+O2=>H2O') {
+    out.textContent = '2H₂ + O₂ → 2H₂O';
+  } else {
+    out.textContent = 'This demo only balances water right now 😊 Try: H2 + O2 -> H2O';
+  }
+});
+
+/* === Mole Master sliders === */
+const rSlide = document.getElementById('mm-reactant');
+const pSlide = document.getElementById('mm-product');
+const rVal = document.getElementById('mm-reactant-val');
+const pVal = document.getElementById('mm-product-val');
+const limitMsg = document.getElementById('mm-limit-msg');
+function updateMM() {
+  rVal.textContent = rSlide.value;
+  pVal.textContent = pSlide.value;
+  const r = Number(rSlide.value), p = Number(pSlide.value);
+  if (r === 0 && p === 0) limitMsg.textContent = 'Both are zero — nothing will happen yet!';
+  else if (r === p) limitMsg.textContent = 'Perfectly matched — no leftovers 🎉';
+  else if (r < p) limitMsg.textContent = 'Reactant is limiting (you need more reactant to hit that product target).';
+  else limitMsg.textContent = 'Product target is low — you will have leftover reactant.';
+}
+rSlide.addEventListener('input', updateMM);
+pSlide.addEventListener('input', updateMM);
+updateMM();
+
+/* === Titration: auto-calc titres & mean === */
+function twoDp(x){ return Number(x).toFixed(2); }
+function recalcTitration() {
+  for (let row = 0; row <= 2; row++) {
+    const init = document.querySelector(`.tit-in[data-row="${row}"][data-type="init"]`).value;
+    const fin  = document.querySelector(`.tit-in[data-row="${row}"][data-type="final"]`).value;
+    const titre = twoDp(Number(fin) - Number(init));
+    document.getElementById(`tit-titre-${row}`).textContent = titre;
+  }
+  const t1 = parseFloat(document.getElementById('tit-titre-1').textContent);
+  const t2 = parseFloat(document.getElementById('tit-titre-2').textContent);
+  document.getElementById('tit-mean').textContent = twoDp((t1 + t2) / 2);
+}
+document.querySelectorAll('.tit-in').forEach(inp => {
+  inp.addEventListener('input', recalcTitration);
+});
+recalcTitration();
+</script>
 </html>
