@@ -413,9 +413,16 @@ function dripOnce() {
   updateBuretteUI();
 }
 
+// Compute + set the interval from the current flow rate
+function setDripIntervalFromRate() {
+  const rate = Math.max(1, parseInt(flowSlider.value, 10) || 8); // drops/sec
+  const period = 1000 / rate; // ms per drop
+  if (dripTimer) clearInterval(dripTimer);
+  dripTimer = setInterval(dripOnce, period);
+}
+
 function startHold() {
-  if (dripTimer) return;
-  dripTimer = setInterval(dripOnce, 120); // ~8 drops/sec
+  setDripIntervalFromRate(); // start (or retune) with current slider value
 }
 function stopHold() {
   if (!dripTimer) return;
@@ -429,6 +436,13 @@ holdBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startHold();
 ['mouseup','mouseleave','touchend','touchcancel'].forEach(ev => {
   holdBtn.addEventListener(ev, stopHold);
 });
+
+// If the flow slider changes while holding, retune the interval live
+flowSlider.addEventListener('input', () => {
+  updateFlowLabel();
+  if (dripTimer) setDripIntervalFromRate();
+});
+
 resetBtn.addEventListener('click', () => {
   burSlider.value = '0';
   updateBuretteUI();
