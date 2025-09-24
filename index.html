@@ -603,10 +603,18 @@ flowSlider.addEventListener('input', () => {
 
 
 resetBtn.addEventListener('click', () => {
+  // Reset burette volume
   burSlider.value = '0';
   updateBuretteUI();
+
+  // Close the tap
   updateTapVisual(0);
+
+  // Reset flow rate slider to default (8 drops/s)
+  flowSlider.value = 8;
+  updateFlowLabel();
 });
+
 
 // React to slider & indicator changes
 burSlider.addEventListener('input', updateBuretteUI);
