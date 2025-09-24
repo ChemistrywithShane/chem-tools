@@ -423,6 +423,65 @@ function approxPH(added) {
   const ph = 13 - sig * 12;            // ~13 high, ~1 low
   return Math.max(1, Math.min(13, ph));
 }
+  function drawPHGraph() {
+  const cvs = document.getElementById('ph-graph');
+  if (!cvs) return;
+  const ctx = cvs.getContext('2d');
+
+  const W = cvs.width, H = cvs.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Margins
+  const mL = 36, mR = 10, mT = 10, mB = 28;
+  const plotW = W - mL - mR, plotH = H - mT - mB;
+
+  // X range: 0 .. 1.5 * ENDPOINT
+  const xMax = Math.max(5, ENDPOINT * 1.5);
+  const xToPx = x => mL + (x / xMax) * plotW;
+  const yToPx = ph => mT + (1 - (ph - 1) / 12) * plotH; // ph 1..13 -> bottom..top
+
+  // Axes
+  ctx.strokeStyle = '#999'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(mL, mT); ctx.lineTo(mL, mT+plotH); ctx.lineTo(mL+plotW, mT+plotH); ctx.stroke();
+
+  // Ticks & labels
+  ctx.fillStyle = '#666'; ctx.font = '12px sans-serif';
+  for (let pH = 1; pH <= 13; pH += 2) {
+    const y = yToPx(pH);
+    ctx.beginPath(); ctx.moveTo(mL-4,y); ctx.lineTo(mL,y); ctx.stroke();
+    ctx.fillText(pH.toString(), 4, y+4);
+  }
+  for (let i = 0; i <= 5; i++) {
+    const x = (i/5)*xMax;
+    const xp = xToPx(x), y0 = mT+plotH;
+    ctx.beginPath(); ctx.moveTo(xp, y0); ctx.lineTo(xp, y0+4); ctx.stroke();
+    ctx.fillText((Math.round(x*10)/10).toString(), xp-6, y0+16);
+  }
+
+  // Curve
+  ctx.strokeStyle = '#2b6'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i = 0; i <= 200; i++) {
+    const x = (i/200)*xMax;
+    const ph = approxPH(x);
+    const xp = xToPx(x), yp = yToPx(ph);
+    if (i===0) ctx.moveTo(xp, yp); else ctx.lineTo(xp, yp);
+  }
+  ctx.stroke();
+
+  // Mark ENDPOINT vertical
+  const epX = xToPx(ENDPOINT);
+  ctx.strokeStyle = '#bbb'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(epX, mT); ctx.lineTo(epX, mT+plotH); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Current volume marker
+  const v = parseFloat(burSlider.value);
+  const vp = xToPx(v), pNow = approxPH(v), yp = yToPx(pNow);
+  ctx.fillStyle = '#c33';
+  ctx.beginPath(); ctx.arc(vp, yp, 3, 0, Math.PI*2); ctx.fill();
+}
+
 function updateFlowLabel() {
   if (!flowSlider) return;
   flowOut.textContent = flowSlider.value;
