@@ -364,6 +364,8 @@ function getEndpoint() {
   const v = el ? parseFloat(el.textContent) : 23.50;
   return isFinite(v) ? v : 23.50;
 }
+  let ENDPOINT = getEndpoint
+  
 // Endpoint from concentrations (assume 1:1 strong acid/base): Va(cm3) = (Cb * Vb(cm3)) / Ca
 function endpointFromConc() {
   const Ca = Math.max(0.0001, parseFloat(concAcid.value));  // avoid /0
@@ -767,9 +769,9 @@ if (meanEl) {
 }
 
 // Initial paint
+applyEndpoint();        // sets ENDPOINT from concs (or mean if unchecked) and updates UI
 updateBuretteUI();
 updateTapVisual(parseInt(flowSlider?.value || 0, 10));
-applyEndpoint();        // sets ENDPOINT from concs (or mean if unchecked) and updates UI
 drawPHGraph();          // draws initial pH–volume curve + marker
 
 // Create a ripple inside the flask at viewport coords (x,y)
