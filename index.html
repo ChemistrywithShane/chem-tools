@@ -32,8 +32,20 @@ h2 { margin-top: 0; color: #003366; }
 .endpoint-bar { height:10px; background:repeating-linear-gradient(90deg,#ccc 0 10px,#eee 10px 20px); border-radius:6px; margin:8px 0; }
 .dot { display:inline-block; min-width:12px; min-height:12px; border-radius:50%; border:1px solid #999; vertical-align:middle; margin-right:6px; }
 
-.drop { position:absolute; top:0; left:50%; transform:translateX(-50%); width:10px; height:14px; background:#cfe3ff; border-radius:50% 50% 60% 60%/50% 50% 70% 70%; animation:fall .8s linear forwards; }
-@keyframes fall { 0% { top:0; opacity:1; } 85% { top:220px; opacity:1; } 100% { top:230px; opacity:0; } }
+/* Drop now uses viewport coordinates and flies from spout to flask */
+.drop {
+  position: fixed;         /* positioned relative to the viewport */
+  width: 10px;
+  height: 14px;
+  background: #cfe3ff;
+  border-radius: 50% 50% 60% 60%/50% 50% 70% 70%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 1;
+  transform: translate(-50%, -50%);
+  transition: top 0.7s linear, left 0.7s linear, opacity 0.2s ease-out;
+}
+
 
 .readout { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background:#fff; border:1px solid #ddd; padding:4px 8px; border-radius:6px; display:inline-block; }
 .ctrl-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
@@ -308,13 +320,48 @@ function updateBuretteUI() {
 
 // Create a falling drop animation
 function spawnDrop() {
+  // Elements we need
+  const spout = document.querySelector('.burette-spout');
+  const flaskEl = document.getElementById('flask');
+  const liquidEl = document.getElementById('liquid');
+
+  if (!spout || !flaskEl || !liquidEl) return;
+
+  // Get viewport positions
+  const sp = spout.getBoundingClientRect();
+  const fl = flaskEl.getBoundingClientRect();
+  const liq = liquidEl.getBoundingClientRect();
+
+  // Start point: tip of the spout
+  const startX = sp.left + sp.width / 2;
+  const startY = sp.bottom;
+
+  // End point: centre of the flask, at the current liquid surface
+  const targetX = fl.left + fl.width / 2;
+  const targetY = liq.top; // drop hits the surface
+
+  // Create drop in the document body so it can travel anywhere
   const drop = document.createElement('div');
   drop.className = 'drop';
-  // place it under the spout
-  const wrap = document.querySelector('.burette-wrap');
-  wrap.appendChild(drop);
-  setTimeout(() => drop.remove(), 900);
+  document.body.appendChild(drop);
+
+  // Place it at the spout first
+  drop.style.left = `${startX}px`;
+  drop.style.top  = `${startY}px`;
+
+  // On next frame, fly it to the liquid surface
+  requestAnimationFrame(() => {
+    drop.style.left = `${targetX}px`;
+    drop.style.top  = `${targetY - 2}px`; // slight overlap
+  });
+
+  // Clean up after the transition
+  drop.addEventListener('transitionend', () => {
+    drop.style.opacity = '0';
+    setTimeout(() => drop.remove(), 200);
+  }, { once: true });
 }
+
 
 // Buttons
 dripBtn.addEventListener('click', () => {
