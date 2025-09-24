@@ -340,43 +340,44 @@ function spawnDrop() {
   const spout = document.querySelector('.burette-spout');
   const flaskEl = document.getElementById('flask');
   const liquidEl = document.getElementById('liquid');
-
   if (!spout || !flaskEl || !liquidEl) return;
 
-  // Get viewport positions
+  // Viewport positions
   const sp = spout.getBoundingClientRect();
   const fl = flaskEl.getBoundingClientRect();
   const liq = liquidEl.getBoundingClientRect();
 
-  // Start point: tip of the spout
+  // Start (spout tip) and end (liquid surface centre)
   const startX = sp.left + sp.width / 2;
   const startY = sp.bottom;
-
-  // End point: centre of the flask, at the current liquid surface
   const targetX = fl.left + fl.width / 2;
-  const targetY = liq.top; // drop hits the surface
+  const targetY = liq.top;
 
-  // Create drop in the document body so it can travel anywhere
+  // Make the drop anywhere on the page
   const drop = document.createElement('div');
   drop.className = 'drop';
   document.body.appendChild(drop);
 
-  // Place it at the spout first
+  // Start at spout
   drop.style.left = `${startX}px`;
   drop.style.top  = `${startY}px`;
 
-  // On next frame, fly it to the liquid surface
+  // Next frame: fly to liquid surface
   requestAnimationFrame(() => {
     drop.style.left = `${targetX}px`;
     drop.style.top  = `${targetY - 2}px`; // slight overlap
   });
 
-  // Clean up after the transition
+  // When the flight finishes: make a ripple, then fade/remove the drop
   drop.addEventListener('transitionend', () => {
+    // >>> THIS is the new line for 3B:
+    spawnRipple(targetX, targetY);
+
     drop.style.opacity = '0';
     setTimeout(() => drop.remove(), 200);
   }, { once: true });
 }
+
 
 
 // Buttons
