@@ -336,7 +336,7 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
 
   <!-- FLASK (cartoon) -->
 <!-- FLASK (exam-style Erlenmeyer, open neck) -->
-<g id="flask" transform="translate(422,565) scale(1.25)">
+<g id="flask" transform="translate(422,620) scale(1.25)">
   <!-- Interior clip (inset from outline) -->
   <clipPath id="flask-inner">
     <path d="M 76 14 L 76 60 L 62 83 L 36 170 L 124 170 L 98 83 L 84 60 L 84 14 Z"/>
@@ -666,15 +666,20 @@ function updateBuretteUI() {
   svgBurFill.setAttribute('height', h.toFixed(1));
   svgBurFill.setAttribute('y', y.toFixed(1));
 }
-  // --- Flask liquid level (exam flask, driven by setFlaskLevel) ---
+ // --- Flask liquid level (baseline visible + gentle rise) ---
 if (liqRect) {
   const v = parseFloat(burSlider.value) || 0;
-  const e = Math.max(1e-6, ENDPOINT);     // avoid /0
-  const frac = Math.max(0, Math.min(1, v / e)); // clamp 0..1
+  const e = Math.max(1e-6, ENDPOINT);               // avoid /0
+  const frac = Math.max(0, Math.min(1, v / e));     // 0..1
 
-  const hPx = frac * INNER_H;  // scale 0..110 px (full interior height)
+  // Show liquid from the start (there's already solution in the flask)
+  const BASELINE = 0.38;   // 38% of the interior height, always visible
+  const RISE_MAX = 0.18;   // can rise up to +18% by the endpoint
+  const hPx = (BASELINE + RISE_MAX * frac) * INNER_H;
+
   setFlaskLevel(hPx);
 }
+
 
   // pH + colour
   const ph = approxPH(v);
