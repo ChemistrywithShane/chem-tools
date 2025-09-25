@@ -214,9 +214,10 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
 <div class="section">
 <h3>Run Titration</h3>
 
+<!-- New two-column layout -->
 <div class="lab-grid">
 
-  <!-- LEFT: controls -->
+  <!-- LEFT column: all controls -->
   <div class="card sticky-ctrl" id="controls">
     <div class="panel-title">Controls</div>
 
@@ -229,65 +230,98 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
       </select>
     </div>
 
-    <!-- Endpoint bar can stay here if you like -->
+    <!-- Endpoint marker bar (optional visual divider) -->
     <div class="endpoint-bar" title="Endpoint marker"></div>
 
-    <!-- Chemistry setup (your existing inputs) -->
-    <!-- keep all your conc-acid / conc-base / flask-vol / use-conc-endpoint / endpoint-out markup here -->
+    <!-- Chemistry setup -->
+    <div class="ctrl-row" style="margin:6px 0; gap:14px;">
+      <label>Acid in burette:
+        <input id="conc-acid" type="number" step="0.01" value="0.10" style="width:80px;"> mol&nbsp;dm⁻³
+      </label>
+    </div>
 
-    <!-- Live colour + pH readout -->
-    <div class="ctrl-row" style="margin:8px 0;">
-      <span class="dot" id="dot-color"></span>
+    <div class="ctrl-row" style="gap:14px;">
+      <label>Base in flask:
+        <input id="conc-base" type="number" step="0.01" value="0.10" style="width:80px;"> mol&nbsp;dm⁻³
+      </label>
+      <label>Flask vol:
+        <input id="flask-vol" type="number" step="0.1" value="25.0" style="width:80px;"> cm³
+      </label>
+    </div>
+
+    <div class="ctrl-row" style="margin:6px 0;">
+      <label>
+        <input id="use-conc-endpoint" type="checkbox" checked>
+        Use concentrations to set endpoint (overrides table mean)
+      </label>
+    </div>
+
+    <div class="ctrl-row" style="margin:4px 0;">
+      <span>Endpoint: <span class="readout" id="endpoint-out">—</span> cm³
+        <small style="opacity:.7">(<span id="endpoint-source">from concentrations</span>)</small>
+      </span>
+    </div>
+
+    <!-- Flow rate -->
+    <div class="ctrl-row" style="margin-top:6px;">
+      <label for="flow-rate"><b>Flow rate</b> (drops/s): <span class="readout" id="flow-out">8</span></label>
+      <input id="flow-rate" type="range" min="1" max="20" value="8" step="1" style="width:240px;">
+    </div>
+
+    <!-- Burette volume + buttons -->
+    <div style="margin-top:8px;">
+      <label for="bur-vol"><b>Burette volume added</b> (cm³): <span class="readout" id="bur-vol-out">0.00</span></label>
+      <input id="bur-vol" type="range" min="0" max="30" value="0" step="0.05" style="width:100%;">
+    </div>
+
+    <div class="ctrl-row" style="margin-top:6px;">
+      <button id="drip-1">Drip 1 drop (≈0.05 cm³)</button>
+      <button id="drip-hold">Hold to drip</button>
+      <button id="reset-bur">Reset</button>
+    </div>
+
+    <!-- Live colour dot + pH readout -->
+    <div class="ctrl-row" style="margin:6px 0;">
+      <span class="dot" id="dot-color" style="background:#ffc0de;"></span>
       Flask colour • pH (approx): <span class="readout" id="ph-read">~13</span>
     </div>
-
-    <!-- Volume + drip controls -->
-    <!-- keep your bur-vol slider and drip buttons here -->
-    <!-- Flow rate slider fits nicely here too -->
-
   </div>
 
-  <!-- RIGHT: visuals (burette | flask | graph) -->
+  <!-- RIGHT column: lab visuals (burette + flask + graph) -->
   <div class="visuals">
-    <div class="panel">
-      <div class="panel-title">Burette</div>
-      <div class="burette-wrap">
-        <div class="burette-scale"></div>
-        <div class="burette-fill" id="bur-fill"></div>
-        <div class="burette-tap"></div>
-        <div class="burette-spout"></div>
-      </div>
-    </div>
+    <div class="visuals-grid">
 
-    <div class="panel" style="text-align:center;">
-      <div class="panel-title">Flask (base + indicator)</div>
-      <div class="flask" id="flask">
-        <div class="liquid" id="liquid"></div>
+      <!-- Burette -->
+      <div>
+        <div class="burette-wrap">
+          <div class="burette-scale"></div>
+          <div class="burette-fill" id="bur-fill" style="height:85%;"></div>
+          <div class="burette-tap"></div>
+          <div class="burette-spout"></div>
+          <!-- falling drops are injected here -->
+        </div>
       </div>
-      <div style="opacity:.75">Colour at endpoint depends on indicator choice.</div>
-    </div>
 
-    <div class="panel">
-      <div class="panel-title">pH vs volume added</div>
-      <canvas id="ph-graph" width="360" height="240"></canvas>
+      <!-- Flask -->
+      <div style="text-align:center;">
+        <div><b>Flask (25.0 cm³ base + indicator)</b></div>
+        <div class="flask" id="flask">
+          <div class="liquid" id="liquid"></div>
+        </div>
+        <div>Colour at endpoint depends on indicator choice.</div>
+      </div>
+
+      <!-- Graph -->
+      <div>
+        <div style="margin-top:10px;"><b>pH vs volume added</b></div>
+        <canvas id="ph-graph" width="320" height="220"></canvas>
+      </div>
+
     </div>
   </div>
 
 </div>
 
-
-  <!-- Right: Flask visual -->
-  <div class="panel" style="max-width:340px; text-align:center;">
-    <div><b>Flask (25.0 cm³ base + indicator)</b></div>
-    <div class="flask" id="flask">
-      <div class="liquid" id="liquid"></div>
-    </div>
-    <div>Colour at endpoint depends on indicator choice.</div>
-  </div>
-
-  <div style="margin-top:10px;"><b>pH vs volume added</b></div>
-<canvas id="ph-graph" width="320" height="220"></canvas>
-</div>
 
 <h3>Data Table</h3>
 <table class="table" id="tit-table">
