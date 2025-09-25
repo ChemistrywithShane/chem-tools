@@ -61,12 +61,8 @@ h2 { margin-top: 0; color: #003366; }
   box-shadow: 0 3px 10px rgba(0,0,0,0.05);
 }
 
-/* Right visuals area: burette + flask + graph */
-.visuals {
-  display: grid;
-  grid-template-columns: 360px 360px 1fr;  /* burette | flask | graph */
-  gap: 18px;
-}
+/* Right visuals area: burette + flask */
+
 .visuals .panel {
   border: 1px dashed #cbd5e1;
   border-radius: 10px;
@@ -84,12 +80,7 @@ h2 { margin-top: 0; color: #003366; }
   position: sticky;
   top: 12px;
 }
-<!-- Graph -->
-<div>
-  <hr style="margin:10px 0; border:none; border-top:1px solid #e5e7eb;">
-  <div style="margin-top:10px;"><b>pH vs volume added</b></div>
-  <canvas id="ph-graph" width="320" height="220"></canvas>
-</div>
+
 
 .readout { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background:#fff; border:1px solid #ddd; padding:4px 8px; border-radius:6px; display:inline-block; }
 .ctrl-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
@@ -280,6 +271,10 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
       <span class="dot" id="dot-color" style="background:#ffc0de;"></span>
       Flask colour • pH (approx): <span class="readout" id="ph-read">~13</span>
     </div>
+    
+    <hr style="margin:10px 0; border:none; border-top:1px solid #e5e7eb;">
+<div style="margin-top:6px;"><b>pH vs volume added</b></div>
+<canvas id="ph-graph" width="320" height="220"></canvas>
   </div>
 
   <!-- RIGHT column: lab visuals (burette + flask + graph) -->
@@ -301,45 +296,41 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
 
   <!-- BURETTE -->
   <g id="burette" transform="translate(500,40)">
-    <!-- tube outline -->
-    <rect x="0" y="0" width="44" height="470" rx="12" class="svg-glass"/>
-    <!-- internal fill (so you can show “fullness”) -->
-    <rect id="bur-fill-svg" x="2" y="2" width="40" height="430" rx="10" fill="#cfe3ff" opacity=".6"/>
+  <!-- tube outline -->
+  <rect x="0" y="0" width="44" height="470" rx="12" class="svg-glass"/>
+  <rect id="bur-fill-svg" x="2" y="2" width="40" height="430" rx="10" fill="#cfe3ff" opacity=".6"/>
 
-    <!-- ticks (inside the tube) -->
-<g id="buretteTicks" class="svg-tick">
-  <!-- long ticks every 50 px -->
-  <line x1="4"  y1="20"  x2="18" y2="20"/>
-  <line x1="4"  y1="70"  x2="18" y2="70"/>
-  <line x1="4"  y1="120" x2="18" y2="120"/>
-  <line x1="4"  y1="170" x2="18" y2="170"/>
-  <line x1="4"  y1="220" x2="18" y2="220"/>
-  <line x1="4"  y1="270" x2="18" y2="270"/>
-  <line x1="4"  y1="320" x2="18" y2="320"/>
-  <line x1="4"  y1="370" x2="18" y2="370"/>
-  <line x1="4"  y1="420" x2="18" y2="420"/>
+  <!-- ticks (inside the tube) -->
+  <g id="buretteTicks" class="svg-tick">
+    <line x1="4" y1="20"  x2="18" y2="20"/>
+    <line x1="4" y1="70"  x2="18" y2="70"/>
+    <line x1="4" y1="120" x2="18" y2="120"/>
+    <line x1="4" y1="170" x2="18" y2="170"/>
+    <line x1="4" y1="220" x2="18" y2="220"/>
+    <line x1="4" y1="270" x2="18" y2="270"/>
+    <line x1="4" y1="320" x2="18" y2="320"/>
+    <line x1="4" y1="370" x2="18" y2="370"/>
+    <line x1="4" y1="420" x2="18" y2="420"/>
+  </g>
+
+  <!-- stopcock block (now INSIDE burette group) -->
+  <g id="stopcock" transform="translate(0,470)">
+    <rect x="4" y="-30" width="52" height="32" rx="8" class="svg-metal"/>
+    <path d="M56,-16 H95 a8,8 0 0 1 8,8 v0 a8,8 0 0 1 -8,8 H56 Z" class="svg-metal"/>
+    <g id="handle" transform="translate(26,-34)">
+      <line x1="0" y1="0" x2="0" y2="-10" class="svg-line"/>
+      <line x1="-12" y1="-10" x2="12" y2="-10" class="svg-line"/>
+    </g>
+  </g>
+
+  <!-- vertical tip and hit-point -->
+  <path d="M22,470 v70" class="svg-glass"/>
+  <circle id="spout-tip" cx="22" cy="540" r="3" fill="transparent"/>
 </g>
 
-    </g>
-
-    <!-- stopcock block -->
-    <g id="stopcock" transform="translate(0,470)">
-      <rect x="4" y="-30" width="52" height="32" rx="8" class="svg-metal"/>
-      <path d="M56,-16 H95 a8,8 0 0 1 8,8 v0 a8,8 0 0 1 -8,8 H56 Z" class="svg-metal"/>
-      <!-- handle (pivot = 26,-34) -->
-      <g id="handle" transform="translate(26,-34)">
-        <line x1="0" y1="0" x2="0" y2="-10" class="svg-line"/>
-        <line x1="-12" y1="-10" x2="12" y2="-10" class="svg-line"/>
-      </g>
-    </g>
-
-  <!-- tip straight down under the stopcock housing -->
-<path d="M22,470 v70" class="svg-glass"/>
-<!-- tiny invisible target the JS uses for the start point -->
-<circle id="spout-tip" cx="22" cy="540" r="3" fill="transparent"/>
 
   <!-- FLASK (cartoon) -->
-  <g id="flask" transform="translate(500,380)">
+  <g id="flask" transform="translate(500,480)">
     <!-- body -->
     <path class="svg-glass" d="M-120,170 H120 a12,12 0 0 0 11-18 l-46-96 c-4-8 -6-16 -6-25 V-10 c0-6 -5-11 -11-11 h-14 c-6,0 -11-5 -11-11 v-18 c0-6 -5-11 -11-11 h-36 c-6,0 -11,5 -11,11 v18 c0,6 -5,11 -11,11 h-14 c-6,0 -11,5 -11,11 v45 c0,9 -2,17 -6,25 l-46,96 a12,12 0 0 0 11,18 Z"/>
     <!-- clipping rectangle controls the fill height -->
