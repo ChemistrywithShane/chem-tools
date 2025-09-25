@@ -671,28 +671,15 @@ function updateBuretteUI() {
   svgBurFill.setAttribute('height', h.toFixed(1));
   svgBurFill.setAttribute('y', y.toFixed(1));
 }
-
-// --- Flask liquid level (open neck + interior clip) ---
+  // --- Flask liquid level (exam flask, driven by setFlaskLevel) ---
 if (liqRect) {
-  // Geometry constants that match your SVG (so no hidden magic numbers)
-  const BOX_H   = 170;  // total drawable height of the liquid region
-  const BASE_Y  = 170;  // y-position of the *empty* surface (bottom of box)
-
-  // How “full” the flask looks (baseline + extra up to endpoint)
-  const BASELINE  = 0.35;  // 35% visible even at v=0 (looks nicer)
-  const EXTRA_MAX = 0.20;  // can rise +20% as you approach endpoint
-
   const v = parseFloat(burSlider.value) || 0;
-  const e = Math.max(1e-6, ENDPOINT);               // avoid /0
-  const frac = Math.max(0, Math.min(1, v / e));     // clamp 0..1
+  const e = Math.max(1e-6, ENDPOINT);     // avoid /0
+  const frac = Math.max(0, Math.min(1, v / e)); // clamp 0..1
 
-  const hPx = (BASELINE + EXTRA_MAX * frac) * BOX_H;
-
-  // Write once, rounded for DOM attributes
-  liqRect.setAttribute('height', hPx.toFixed(1));
-  liqRect.setAttribute('y', (BASE_Y - hPx).toFixed(1)); // grow upward
+  const hPx = frac * INNER_H;  // scale 0..110 px (full interior height)
+  setFlaskLevel(hPx);
 }
-
 
   // pH + colour
   const ph = approxPH(v);
