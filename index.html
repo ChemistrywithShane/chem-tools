@@ -356,9 +356,10 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
         x="28" y="170" width="104" height="0"
         clip-path="url(#flask-inner)"/>
 
-  <!-- Flask outline on top -->
-  <path class="svg-glass" fill="none"
-        d="M 73 12 L 73 62 L 57 84 L 28 175 L 132 175 L 103 84 L 87 62 L 87 12 Z"/>
+  <!-- Flask outline on top (stroke only) -->
+<path class="svg-line"
+      d="M 73 12 L 73 62 L 57 84 L 28 175 L 132 175 L 103 84 L 87 62 L 87 12 Z"/>
+
 </g>
 
 </svg>
@@ -469,7 +470,19 @@ const svgHandle  = document.getElementById('handle');
 const spoutTip   = document.getElementById('spout-tip');
 const flaskGroup = document.getElementById('flask');       // <g> group
 const flaskLiquid = document.getElementById('liq-level');   // use the rect you actually draw
-const liqRect    = document.getElementById('liq-level');    // clip rect controlling height  
+const liqRect    = document.getElementById('liq-level');    // clip rect controlling height
+// === Flask geometry + setter (define before first use) ===
+const INNER_H = 110;   // interior height in the flask's SVG coords
+const BASE_Y  = 170;   // base line of the liquid rect
+
+function setFlaskLevel(h){          // h = 0..INNER_H
+  const r = document.getElementById('liq-level');
+  if (!r) return;
+  h = Math.max(8, Math.min(INNER_H, +h || 0)); // tiny minimum = always visible
+  r.setAttribute('height', h.toFixed(1));
+  r.setAttribute('y', (BASE_Y - h).toFixed(1));
+}
+ 
 // Convert an SVG element’s local point (x,y) to viewport/screen coords
 function svgToScreen(elem, x, y) {
   const svg = elem.ownerSVGElement || elem;   // root <svg>
@@ -956,17 +969,7 @@ window.addEventListener('resize', () => {
   if (streamEl && streamEl.style.opacity === '1') positionStream();
 });
 
-// === Flask geometry + setter ===
-const INNER_H = 110;   // interior height in the SVG group (before scaling)
-const BASE_Y  = 170;   // base line of the liquid rect
 
-function setFlaskLevel(h){                  // h = 0..INNER_H
-  const r = document.getElementById('liq-level');
-  if (!r) return;
-  h = Math.max(8, Math.min(INNER_H, +h || 0)); // tiny minimum so it’s always visible
-  r.setAttribute('height', h.toFixed(1));
-  r.setAttribute('y', (BASE_Y - h).toFixed(1));
-}
 
 
 
