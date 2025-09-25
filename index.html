@@ -339,53 +339,22 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
 
 
   <!-- FLASK (cartoon) -->
-<!-- Flask (open neck, professional clip) -->
-<g id="flask" transform="translate(500,640)">
-  <!-- tile under flask -->
-  <rect x="-130" y="170" width="260" height="20" rx="6" class="svg-glass"/>
-  <rect x="-120" y="178" width="240" height="10" rx="4" fill="var(--svg-shadow)"/>
-
-  <!-- CONICAL OUTLINE (open neck): base + left + right -->
-<!-- Flask outline -->
-<!-- Base line -->
-<path class="svg-glass" d="M -60,170 H 60" />
-
-<!-- Left side -->
-<path class="svg-glass"
-      d="M -60,170 
-         L -90,40 
-         L -25,40 
-         L -25,0" />
-
-<!-- Right side -->
-<path class="svg-glass"
-      d="M 60,170 
-         L 90,40 
-         L 25,40 
-         L 25,0" />
-
-
-
-  <!-- CLIP: inside silhouette of the flask (simple, clean) -->
+<!-- FLASK (exam-style Erlenmeyer, open neck) -->
+<g id="flask" transform="translate(500,460)">
+  <!-- Interior clip (inset from outline) -->
   <clipPath id="flask-inner">
-    <path d="
-      M-105,170 H105
-      L 85,120
-      C 78,90 72,60 72,30
-      V-10
-      H 24
-      V-26
-      H-24
-      V-10
-      H-72
-      V30
-      C-72,60 -78,90 -85,120
-      Z" />
+    <path d="M 76 14 L 76 60 L 62 83 L 36 170 L 124 170 L 98 83 L 84 60 L 84 14 Z"/>
   </clipPath>
 
-  <!-- LIQUID: a bottom-up rectangle revealed through the interior clip -->
-  <rect id="liq-level" x="-120" y="170" width="240" height="0"
-        fill="#ffd" clip-path="url(#flask-inner)"/>
+  <!-- Liquid (single rect; JS adjusts height & y) -->
+  <rect id="liq-level"
+        class="flask-liquid"
+        x="28" y="170" width="104" height="0"
+        clip-path="url(#flask-inner)"/>
+
+  <!-- Flask outline on top -->
+  <path class="svg-glass"
+        d="M 73 12 L 73 62 L 57 84 L 28 175 L 132 175 L 103 84 L 87 62 L 87 12 Z"/>
 </g>
 
 </svg>
@@ -993,6 +962,22 @@ function spawnRipple(x, y) {
 window.addEventListener('resize', () => {
   if (streamEl && streamEl.style.opacity === '1') positionStream();
 });
+<script>
+// ... your existing JS code up here ...
+
+const INNER_H = 110;   // interior height of flask
+const BASE_Y   = 170;  // base line
+
+function setFlaskLevel(h){  // h = 0..110
+  const r = document.getElementById('liq-level');
+  r.setAttribute('height', h);
+  r.setAttribute('y', BASE_Y - h);
+}
+
+// Example test: fill half way after 1 second
+setTimeout(()=>setFlaskLevel(55), 1000);
+
 </script>
+
 </body>
 </html>
