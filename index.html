@@ -345,33 +345,24 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
   <rect x="-130" y="170" width="260" height="20" rx="6" class="svg-glass"/>
   <rect x="-120" y="178" width="240" height="10" rx="4" fill="var(--svg-shadow)"/>
 
-  <!-- OUTLINE: two strokes with a gap at the mouth (no closing) -->
-  <!-- left side -->
-  <path class="svg-glass"
-        d="M-120,170 H-18
-           C-45,170 -86,166 -100,140
-           L-120,100
-           C-124,92 -126,84 -126,74
-           V20
-           C-126,8 -118,0 -106,0
-           h10
-           c8,0 14,-6 14,-14
-           v-10
-           c0,-8 6,-14 14,-14
-           h34" />
-  <!-- right side -->
-  <path class="svg-glass"
-        d="M120,170 H18
-           C45,170 86,166 100,140
-           L120,100
-           C124,92 126,84 126,74
-           V20
-           C126,8 118,0 106,0
-           h-10
-           c-8,0 -14,-6 -14,-14
-           v-10
-           c0,-8 -6,-14 -14,-14
-           h-34" />
+  <!-- CONICAL OUTLINE (open neck): base + left + right -->
+<!-- base line -->
+<path class="svg-glass" d="M -60,170 H 60" />
+
+<!-- left side: base -> shoulder -> up neck to inner edge -->
+<path class="svg-glass"
+      d="M -60,170
+         L -85,60
+         L -85,20
+         L -20,20" />
+
+<!-- right side: base -> shoulder -> up neck to inner edge -->
+<path class="svg-glass"
+      d="M 60,170
+         L 85,60
+         L 85,20
+         L 20,20" />
+
 
   <!-- CLIP: inside silhouette of the flask (simple, clean) -->
   <clipPath id="flask-inner">
@@ -503,7 +494,7 @@ const svgBurFill = document.getElementById('bur-fill-svg');
 const svgHandle  = document.getElementById('handle');
 const spoutTip   = document.getElementById('spout-tip');
 const flaskGroup = document.getElementById('flask');       // <g> group
-const flaskLiquid= document.getElementById('flask-liquid'); // path (colour)
+const flaskLiquid = document.getElementById('liq-level');   // use the rect you actually draw
 const liqRect    = document.getElementById('liq-level');    // clip rect controlling height  
 // Convert an SVG element’s local point (x,y) to viewport/screen coords
 function svgToScreen(elem, x, y) {
