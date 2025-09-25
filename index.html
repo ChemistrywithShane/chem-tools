@@ -120,6 +120,8 @@ h2 { margin-top: 0; color: #003366; }
 .svg-glass  { fill:var(--svg-glass);    stroke:var(--svg-line); stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round; }
 .svg-metal  { fill:#fff;                 stroke:var(--svg-accent); stroke-width:3.2; }
 .svg-tick   { stroke:var(--svg-accent);  stroke-width:2; }
+/* keep outlines thick even when the SVG scales down */
+.svg-line, .svg-glass, .svg-metal, .svg-tick { vector-effect: non-scaling-stroke; }
 
 </style>
 </head>
@@ -453,9 +455,7 @@ const svgHandle  = document.getElementById('handle');
 const spoutTip   = document.getElementById('spout-tip');
 const flaskGroup = document.getElementById('flask');       // <g> group
 const flaskLiquid= document.getElementById('flask-liquid'); // path (colour)
-const liqRect    = document.getElementById('liq-level');    // clip rect controlling height
-// === SVG elements for the cartoon kit ===
-const svgHandle  = document.getElementById('handle');     // stopcock T-bar (pivot at 26,-34)  
+const liqRect    = document.getElementById('liq-level');    // clip rect controlling height  
 
 // --- flow / pour constants ---
 const CONT_THRESHOLD = 15;   // ≥ this rate = continuous stream
@@ -866,22 +866,14 @@ updateTapVisual(parseInt(flowSlider?.value || 0, 10));
 drawPHGraph();          // draws initial pH–volume curve + marker
 
 // Create a ripple inside the flask at viewport coords (x,y)
+// Create a ripple at viewport coords (x,y) — append to <body>, not SVG
 function spawnRipple(x, y) {
-  const flaskEl = document.getElementById('flask');
-  if (!flaskEl) return;
-  const fr = flaskEl.getBoundingClientRect();
-
-  // Convert viewport coords to flask-local coords
-  const rx = x - fr.left;
-  const ry = y - fr.top;
-
   const rip = document.createElement('div');
   rip.className = 'ripple';
-  rip.style.left = rx + 'px';
-  rip.style.top  = ry + 'px';
-  flaskEl.appendChild(rip);
-
-  // Clean up after animation
+  rip.style.position = 'fixed';
+  rip.style.left = x + 'px';
+  rip.style.top  = y + 'px';
+  document.body.appendChild(rip);
   setTimeout(() => rip.remove(), 650);
 }
 
