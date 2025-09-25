@@ -659,15 +659,7 @@ function colourForIndicator(ph, indicator) {
   return { bg:'#f7f7f7', dot:'#f7f7f7' };
 }
 
-
 // Update the whole visual state
-function updateBuretteUI() {
-  const v = parseFloat(burSlider.value);
-  burOut.textContent = v.toFixed(2);
-// --- Flask geometry + setter (keep these in the main script) ---
-const INNER_H = 110;   // interior height of flask (px in the SVG group)
-const BASE_Y  = 170;   // y of the base line for the liquid rect
-
 function updateBuretteUI() {
   const v = parseFloat(burSlider.value) || 0;
   burOut.textContent = v.toFixed(2);
@@ -687,11 +679,11 @@ function updateBuretteUI() {
     const e = Math.max(1e-6, ENDPOINT);                 // avoid /0
     const frac = Math.max(0, Math.min(1, v / e));       // 0..1
 
-    const BASELINE = 0.38;   // 38% of interior height always visible
-    const RISE_MAX = 0.18;   // can rise +18% by the endpoint
+    const BASELINE = 0.38;   // 38% always visible
+    const RISE_MAX = 0.18;   // +18% by endpoint
     const hPx = (BASELINE + RISE_MAX * frac) * INNER_H; // 0..INNER_H
 
-    setFlaskLevel(hPx);      // helper defined once (see step 3)
+    setFlaskLevel(hPx);
   }
 
   // pH + colour
