@@ -20,15 +20,10 @@ h2 { margin-top: 0; color: #003366; }
 .bench { display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; }
 .panel { flex: 1 1 320px; background:#fafafa; border:2px dashed #aaa; border-radius:8px; padding:12px; }
 
-.burette-wrap { position:relative; height:260px; width:80px; margin:6px auto; border:2px solid #999; border-radius:6px; background:linear-gradient(#e9f3ff,#ffffff); }
+
 .burette-scale { position:absolute; left:8px; top:6px; bottom:6px; width:10px; background:repeating-linear-gradient(to bottom, transparent 0 18px, #999 18px 19px); opacity:.7; }
 .burette-fill { position:absolute; right:0; bottom:0; width:100%; background:#cfe3ff; border-bottom-left-radius:4px; border-bottom-right-radius:4px; }
 
-.burette-tap { position:absolute; bottom:-16px; left:50%; transform:translateX(-50%); width:14px; height:14px; background:#666; border-radius:50%; }
-.burette-spout { position:absolute; bottom:-22px; left:50%; transform:translateX(-50%); width:2px; height:20px; background:#666; }
-
-.flask { position:relative; width:240px; height:200px; margin:10px auto; border:2px solid #666; border-radius:0 0 140px 140px / 0 0 60% 60%; overflow:hidden; background:#fff; }
-.liquid { position:absolute; left:0; right:0; bottom:0; height:35%; background:#ffd; transition:background-color .35s ease, height .35s ease; }
 .endpoint-bar { height:10px; background:repeating-linear-gradient(90deg,#ccc 0 10px,#eee 10px 20px); border-radius:6px; margin:8px 0; }
 .dot { display:inline-block; min-width:12px; min-height:12px; border-radius:50%; border:1px solid #999; vertical-align:middle; margin-right:6px; }
 
@@ -113,29 +108,18 @@ h2 { margin-top: 0; color: #003366; }
   opacity: 0;
   transition: opacity .15s ease;
 }
- /* --- Tap animation (open/close) --- */
-.burette-tap {
-  transition: transform .18s ease;        /* smooth rotate */
-}
 
-/* add a little handle on the tap to make movement obvious */
-.burette-tap::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 4px;
-  width: 24px;           /* handle length */
-  height: 6px;
-  border-radius: 3px;
-  background: #5a5a5a;
-  transform-origin: left center;
-  transform: translateX(-50%);
+/* === Cartoon SVG styling (added) === */
+:root{
+  --svg-line:#374151;    /* outline */
+  --svg-accent:#111827;  /* ticks/tap */
+  --svg-glass:#ffffff;   /* glass interior */
+  --svg-shadow:#e5e7eb;  /* subtle shading */
 }
-
-/* spout gets a bit thicker when tap is open */
-.burette-spout {
-  transition: width .18s ease, opacity .18s ease;
-}
+.svg-line   { stroke:var(--svg-line);   stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round; fill:none; }
+.svg-glass  { fill:var(--svg-glass);    stroke:var(--svg-line); stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round; }
+.svg-metal  { fill:#fff;                 stroke:var(--svg-accent); stroke-width:3.2; }
+.svg-tick   { stroke:var(--svg-accent);  stroke-width:2; }
 
 </style>
 </head>
@@ -291,25 +275,73 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
   <div class="visuals">
     <div class="visuals-grid">
 
-      <!-- Burette -->
-      <div>
-        <div class="burette-wrap">
-          <div class="burette-scale"></div>
-          <div class="burette-fill" id="bur-fill" style="height:85%;"></div>
-          <div class="burette-tap"></div>
-          <div class="burette-spout"></div>
-          <!-- falling drops are injected here -->
-        </div>
-      </div>
+  <!-- Cartoon burette + flask SVG (unlabelled; animation-ready) -->
+<svg id="lab-svg" viewBox="0 0 1100 700" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+  <!-- optional stand + tile (nice for layout; hide if you want) -->
+  <g id="stand">
+    <rect x="180" y="620" width="320" height="24" rx="6" class="svg-glass"/>
+    <rect x="190" y="628" width="300" height="10" rx="4" fill="var(--svg-shadow)"/>
+    <rect x="330" y="120" width="18" height="520" rx="9" class="svg-metal"/>
+  </g>
+  <g id="tile">
+    <rect x="410" y="600" width="200" height="20" rx="6" class="svg-glass"/>
+    <rect x="420" y="607" width="180" height="7" rx="3" fill="var(--svg-shadow)"/>
+  </g>
 
-      <!-- Flask -->
-      <div style="text-align:center;">
-        <div><b>Flask (25.0 cm³ base + indicator)</b></div>
-        <div class="flask" id="flask">
-          <div class="liquid" id="liquid"></div>
-        </div>
-        <div>Colour at endpoint depends on indicator choice.</div>
-      </div>
+  <!-- BURETTE -->
+  <g id="burette" transform="translate(720,80)">
+    <!-- tube outline -->
+    <rect x="0" y="0" width="44" height="470" rx="12" class="svg-glass"/>
+    <!-- internal fill (so you can show “fullness”) -->
+    <rect id="bur-fill-svg" x="2" y="2" width="40" height="430" rx="10" fill="#cfe3ff" opacity=".6"/>
+
+    <!-- ticks -->
+    <g id="buretteTicks">
+      <g class="svg-tick">
+        <line x1="44" y1="20" x2="70" y2="20"/>
+        <line x1="44" y1="70" x2="70" y2="70"/>
+        <line x1="44" y1="120" x2="70" y2="120"/>
+        <line x1="44" y1="170" x2="70" y2="170"/>
+        <line x1="44" y1="220" x2="70" y2="220"/>
+        <line x1="44" y1="270" x2="70" y2="270"/>
+        <line x1="44" y1="320" x2="70" y2="320"/>
+        <line x1="44" y1="370" x2="70" y2="370"/>
+        <line x1="44" y1="420" x2="70" y2="420"/>
+      </g>
+    </g>
+
+    <!-- stopcock block -->
+    <g id="stopcock" transform="translate(-4,470)">
+      <rect x="4" y="-30" width="52" height="32" rx="8" class="svg-metal"/>
+      <path d="M56,-16 H95 a8,8 0 0 1 8,8 v0 a8,8 0 0 1 -8,8 H56 Z" class="svg-metal"/>
+      <!-- handle (pivot = 26,-34) -->
+      <g id="handle" transform="translate(26,-34)">
+        <line x1="0" y1="0" x2="0" y2="-10" class="svg-line"/>
+        <line x1="-12" y1="-10" x2="12" y2="-10" class="svg-line"/>
+      </g>
+    </g>
+
+    <!-- tip into flask -->
+    <path d="M22,470 v36 c0,10 8,18 18,18 h24" class="svg-glass"/>
+    <path d="M64,524 q16,0 20,16 v20" class="svg-glass"/>
+    <!-- tiny, invisible target so JS can find the spout tip position -->
+    <circle id="spout-tip" cx="84" cy="560" r="3" fill="transparent"/>
+  </g>
+
+  <!-- FLASK (cartoon) -->
+  <g id="flask" transform="translate(500,430)">
+    <!-- body -->
+    <path class="svg-glass" d="M-120,170 H120 a12,12 0 0 0 11-18 l-46-96 c-4-8 -6-16 -6-25 V-10 c0-6 -5-11 -11-11 h-14 c-6,0 -11-5 -11-11 v-18 c0-6 -5-11 -11-11 h-36 c-6,0 -11,5 -11,11 v18 c0,6 -5,11 -11,11 h-14 c-6,0 -11,5 -11,11 v45 c0,9 -2,17 -6,25 l-46,96 a12,12 0 0 0 11,18 Z"/>
+    <!-- clipping rectangle controls the fill height -->
+    <clipPath id="liq-clip">
+      <rect id="liq-level" x="-120" y="170" width="240" height="0" />
+    </clipPath>
+    <!-- liquid shape (colour via fill; height via clip) -->
+    <path id="flask-liquid" d="M-118,120 q45,-12 118,-12 q73,0 118,12 v60 h-236 Z"
+          fill="#ffd" clip-path="url(#liq-clip)"/>
+  </g>
+</svg>
+   
 
       <!-- Graph -->
       <div>
@@ -415,7 +447,16 @@ const concBase   = document.getElementById('conc-base');   // mol dm^-3
 const flaskVol   = document.getElementById('flask-vol');   // cm^3
 const useConcEP  = document.getElementById('use-conc-endpoint');
 const epSource   = document.getElementById('endpoint-source');
-  
+// === NEW: SVG elements ===
+const svgBurFill = document.getElementById('bur-fill-svg');
+const svgHandle  = document.getElementById('handle');
+const spoutTip   = document.getElementById('spout-tip');
+const flaskGroup = document.getElementById('flask');       // <g> group
+const flaskLiquid= document.getElementById('flask-liquid'); // path (colour)
+const liqRect    = document.getElementById('liq-level');    // clip rect controlling height
+// === SVG elements for the cartoon kit ===
+const svgHandle  = document.getElementById('handle');     // stopcock T-bar (pivot at 26,-34)  
+
 // --- flow / pour constants ---
 const CONT_THRESHOLD = 15;   // ≥ this rate = continuous stream
 const BASE_STEP = 0.05;      // ~0.05 cm³ per “drop” at low flow
@@ -532,22 +573,13 @@ function updateFlowLabel() {
 updateFlowLabel();
 flowSlider.addEventListener('input', updateFlowLabel);
 function updateTapVisual(rate) {
-  const tap = document.querySelector('.burette-tap');
-  const spout = document.querySelector('.burette-spout');
-  if (!tap || !spout) return;
-
-  // Map rate (1..20) to angle (0..85°). Below ~1 = closed.
+  if (!svgHandle) return;                                 // SVG not present yet
   const r = Math.max(0, Math.min(20, parseInt(rate || 0, 10)));
-  const angle = (r / 20) * 85;                      // degrees
-
-  // Keep existing translateX(-50%) and add rotate()
-  tap.style.transform = `translateX(-50%) rotate(${angle}deg)`;
-
-  // Spout looks "more open" with slightly larger width and higher opacity
-  const w = 2 + (r / 20) * 3;                       // 2px → 5px
-  spout.style.width = `${w}px`;
-  spout.style.opacity = r > 0 ? 1 : 0.8;
+  const angle = (r / 20) * 85;                            // 0..85°
+  // Rotate around the handle’s own pivot and preserve its translate
+  svgHandle.setAttribute('transform', `translate(26,-34) rotate(${angle})`);
 }
+
 
 // Colour model per indicator
 function colourForIndicator(ph, indicator) {
@@ -569,23 +601,32 @@ function updateBuretteUI() {
   const v = parseFloat(burSlider.value);
   burOut.textContent = v.toFixed(2);
 
-  // Burette fill: 0 cm³ added = full, max = emptier
-  const max = parseFloat(burSlider.max);
-  const fillPct = Math.max(0, 100 - (v / max) * 100);
-  burFill.style.height = fillPct + '%';
+  // Burette "fullness" (height of the inner rect decreases as volume added increases)
+  if (svgBurFill) {
+    const max = parseFloat(burSlider.max) || 30;
+    const tubeInnerH = 430;  // from SVG (height of bur-fill-svg)
+    const h = Math.max(0, tubeInnerH * (1 - v / max));
+    svgBurFill.setAttribute('height', h.toFixed(1));
+  }
 
-  // Liquid height grows a little as you add volume (looks lively)
-  const baseHeight = 35; // %
-  const extra = Math.min(20, (v / ENDPOINT) * 20);
-  liquid.style.height = (baseHeight + extra) + '%';
+  // Flask liquid level: control clip-rect height (0 at empty; grows downward)
+  if (liqRect) {
+    const basePct = 0.35; // 35% baseline
+    const extraPct = Math.min(0.20, (v / ENDPOINT) * 0.20);
+    const boxH = 170;     // from SVG (liquid area height; matches clip region area)
+    const hPx = (basePct + extraPct) * boxH;
+    liqRect.setAttribute('height', hPx.toFixed(1));
+    liqRect.setAttribute('y', (170 - hPx).toFixed(1)); // keep fill from bottom upwards
+  }
 
-  // pH & colour
+  // pH + colour
   const ph = approxPH(v);
   phOut.textContent = '~' + ph.toFixed(1);
   const col = colourForIndicator(ph, indSelect.value);
-  liquid.style.backgroundColor = col.bg;
+  if (flaskLiquid) flaskLiquid.setAttribute('fill', col.bg);
   dotColor.style.backgroundColor = col.dot;
 }
+
   // Create the (single) stream element if needed
 function ensureStreamEl() {
   if (streamEl) return streamEl;
@@ -597,23 +638,21 @@ function ensureStreamEl() {
 
 // Position the stream from the spout tip down to the current liquid surface
 function positionStream() {
-  const spout = document.querySelector('.burette-spout');
-  const flaskEl = document.getElementById('flask');
-  const liquidEl = document.getElementById('liquid');
-  if (!spout || !flaskEl || !liquidEl) return;
+  if (!spoutTip || !liqRect) return;
 
-  const sp = spout.getBoundingClientRect();
-  const liq = liquidEl.getBoundingClientRect();
+  const sp = spoutTip.getBoundingClientRect();
+  const lr = liqRect.getBoundingClientRect(); // top edge is the surface
 
-  const x = sp.left + sp.width / 2;
-  const yTop = sp.bottom;
-  const yBottom = liq.top;
+  const x = sp.left;              // the circle is ~6px; center is good enough
+  const yTop = sp.top;            // top of tip
+  const yBottom = lr.top;         // liquid surface
 
   const el = ensureStreamEl();
-  el.style.left = `${x - 3}px`;                  // center a 6px wide stream
+  el.style.left = `${x - 3}px`;        // center 6px stream
   el.style.top = `${yTop}px`;
   el.style.height = `${Math.max(6, yBottom - yTop)}px`;
 }
+
 
 // Show/hide the stream with a quick fade
 function showStream(show) {
@@ -624,53 +663,37 @@ function showStream(show) {
 
 // Create a falling drop animation
 function spawnDrop(step = 0.05) {
-  // Elements we need
-  const spout = document.querySelector('.burette-spout');
-  const flaskEl = document.getElementById('flask');
-  const liquidEl = document.getElementById('liquid');
-  if (!spout || !flaskEl || !liquidEl) return;
+  if (!spoutTip || !liqRect || !flaskGroup) return;
 
-  // Viewport positions
-  const sp = spout.getBoundingClientRect();
-  const fl = flaskEl.getBoundingClientRect();
-  const liq = liquidEl.getBoundingClientRect();
+  const sp = spoutTip.getBoundingClientRect();
+  const lr = liqRect.getBoundingClientRect();
 
-  // Start (spout tip) and end (liquid surface centre)
-  const startX = sp.left + sp.width / 2;
-  const startY = sp.bottom;
-  const targetX = fl.left + fl.width / 2;
-  const targetY = liq.top;
+  const startX = sp.left;
+  const startY = sp.top;
+  const targetX = (lr.left + lr.right) / 2;      // middle of the liquid surface
+  const targetY = lr.top;
 
-  // Make the drop anywhere on the page
   const drop = document.createElement('div');
   drop.className = 'drop';
   document.body.appendChild(drop);
-  
-  // Scale drop size with step (so big glugs look larger)
-  const size = Math.min(22, 8 + step * 200); // ~8px at low flow, up to ~22px
-  drop.style.width = size + 'px';
+
+  const size = Math.min(22, 8 + step * 200);
+  drop.style.width  = size + 'px';
   drop.style.height = (size * 1.3) + 'px';
-  
-  // Start at spout
   drop.style.left = `${startX}px`;
   drop.style.top  = `${startY}px`;
 
-  // Next frame: fly to liquid surface
   requestAnimationFrame(() => {
     drop.style.left = `${targetX}px`;
-    drop.style.top  = `${targetY - 2}px`; // slight overlap
+    drop.style.top  = `${targetY - 2}px`;
   });
 
-  // When the flight finishes: make a ripple, then fade/remove the drop
   drop.addEventListener('transitionend', () => {
-    // >>> THIS is the new line for 3B:
     spawnRipple(targetX, targetY);
-
     drop.style.opacity = '0';
     setTimeout(() => drop.remove(), 200);
   }, { once: true });
 }
-
 
 
 // Buttons
