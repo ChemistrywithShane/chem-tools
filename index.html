@@ -213,6 +213,7 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
       <select id="ind-select">
         <option value="phenolphthalein" selected>Phenolphthalein (pink → colourless)</option>
         <option value="methylorange">Methyl orange (red → orange → yellow)</option>
+        <option value="universal">Universal indicator (red → green → violet)</option>
       </select>
     </div>
 
@@ -338,26 +339,62 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
 
 
   <!-- FLASK (cartoon) -->
-<g id="flask" transform="translate(500,690)">
-  <!-- white tile under flask -->
+<!-- Flask (open neck, professional clip) -->
+<g id="flask" transform="translate(500,640)">
+  <!-- tile under flask -->
   <rect x="-130" y="170" width="260" height="20" rx="6" class="svg-glass"/>
   <rect x="-120" y="178" width="240" height="10" rx="4" fill="var(--svg-shadow)"/>
 
-  <!-- body -->
+  <!-- OUTLINE: two strokes with a gap at the mouth (no closing) -->
+  <!-- left side -->
   <path class="svg-glass"
-        d="M-120,170 H120 a12,12 0 0 0 11-18 l-46-96 c-4-8 -6-16 -6-25 V-10 c0-6 -5-11 -11-11 h-14 c-6,0 -11-5 -11-11 v-18 c0-6 -5-11 -11-11 h-36 c-6,0 -11,5 -11,11 v18 c0,6 -5,11 -11,11 h-14 c-6,0 -11,5 -11,11 v45
-           c0,9 -2,17 -6,25 l-46,96 a12,12 0 0 0 11,18 Z"/>
+        d="M-120,170 H-18
+           C-45,170 -86,166 -100,140
+           L-120,100
+           C-124,92 -126,84 -126,74
+           V20
+           C-126,8 -118,0 -106,0
+           h10
+           c8,0 14,-6 14,-14
+           v-10
+           c0,-8 6,-14 14,-14
+           h34" />
+  <!-- right side -->
+  <path class="svg-glass"
+        d="M120,170 H18
+           C45,170 86,166 100,140
+           L120,100
+           C124,92 126,84 126,74
+           V20
+           C126,8 118,0 106,0
+           h-10
+           c-8,0 -14,-6 -14,-14
+           v-10
+           c0,-8 -6,-14 -14,-14
+           h-34" />
 
-  <!-- liquid clip -->
-  <clipPath id="liq-clip">
-    <rect id="liq-level" x="-120" y="170" width="240" height="0" />
+  <!-- CLIP: inside silhouette of the flask (simple, clean) -->
+  <clipPath id="flask-inner">
+    <path d="
+      M-105,170 H105
+      L 85,120
+      C 78,90 72,60 72,30
+      V-10
+      H 24
+      V-26
+      H-24
+      V-10
+      H-72
+      V30
+      C-72,60 -78,90 -85,120
+      Z" />
   </clipPath>
 
-  <!-- liquid -->
-  <path id="flask-liquid"
-        d="M-118,120 q45,-12 118,-12 q73,0 118,12 v60 h-236 Z"
-        fill="#ffd" clip-path="url(#liq-clip)"/>
+  <!-- LIQUID: a bottom-up rectangle revealed through the interior clip -->
+  <rect id="liq-level" x="-120" y="170" width="240" height="0"
+        fill="#ffd" clip-path="url(#flask-inner)"/>
 </g>
+
 </svg>
    
 
@@ -600,22 +637,63 @@ function updateTapVisual(rate) {
   // Rotate around the handle’s own pivot and preserve its translate
   svgHandle.setAttribute('transform', `translate(26,-34) rotate(${angle})`);
 }
+// Linear interpolate between two hex colours (#rrggbb)
+function lerpColor(hex1, hex2, t) {
+  const a = parseInt(hex1.slice(1), 16);
+  const b = parseInt(hex2.slice(1), 16);
+  const r1 = (a >> 16) & 255, g1 = (a >> 8) & 255, bl1 = a & 255;
+  const r2 = (b >> 16) & 255, g2 = (b >> 8) & 255, bl2 = b & 255;
+  const r = Math.round(r1 + (r2 - r1) * t);
+  const g = Math.round(g1 + (g2 - g1) * t);
+  const bl = Math.round(bl1 + (bl2 - bl1) * t);
+  return `#${(r<<16 | g<<8 | bl).toString(16).padStart(6,'0')}`;
+}
+
+// pH → Universal indicator colour via blended stops
+function universalColor(ph) {
+  const stops = [
+    { p: 1,  c: '#ff0000' }, // red
+    { p: 3,  c: '#ff7f00' }, // orange
+    { p: 5,  c: '#ffff00' }, // yellow
+    { p: 7,  c: '#00c853' }, // green
+    { p: 9,  c: '#00a2ff' }, // blue-cyan
+    { p: 11, c: '#3d5afe' }, // blue
+    { p: 13, c: '#8b00ff' }  // violet
+  ];
+  if (ph <= stops[0].p) return stops[0].c;
+  if (ph >= stops[stops.length-1].p) return stops[stops.length-1].c;
+
+  for (let i = 0; i < stops.length - 1; i++) {
+    const a = stops[i], b = stops[i+1];
+    if (ph >= a.p && ph <= b.p) {
+      const t = (ph - a.p) / (b.p - a.p);
+      return lerpColor(a.c, b.c, t);
+    }
+  }
+  return '#cccccc';
+}
 
 
 // Colour model per indicator
 function colourForIndicator(ph, indicator) {
   if (indicator === 'phenolphthalein') {
-    // Pink above ~8.2, colourless below ~8.2
-    if (ph >= 10.0) return { bg:'#ffc0de', dot:'#ffc0de' };        // strong pink
-    if (ph >= 8.2)  return { bg:'#ffe0ee', dot:'#ffd2e6' };        // pale pink
-    return { bg:'#f7f7f7', dot:'#f7f7f7' };                        // colourless
-  } else {
-    // Methyl orange: red (<3.1), orange (3.1..4.4), yellow (>4.4)
-    if (ph < 3.1)   return { bg:'#ffb3a8', dot:'#ff8f80' };        // red-ish
-    if (ph < 4.4)   return { bg:'#ffd19a', dot:'#ffb347' };        // orange
-    return { bg:'#fff7a6', dot:'#ffe34d' };                        // yellow
+    if (ph >= 10.0) return { bg:'#ffc0de', dot:'#ffc0de' }; // pink
+    if (ph >= 8.2)  return { bg:'#ffe0ee', dot:'#ffd2e6' }; // pale pink
+    return { bg:'#f7f7f7', dot:'#f7f7f7' };                 // colourless
   }
+  if (indicator === 'methylorange') {
+    if (ph < 3.1)   return { bg:'#ffb3a8', dot:'#ff8f80' }; // red
+    if (ph < 4.4)   return { bg:'#ffd19a', dot:'#ffb347' }; // orange
+    return { bg:'#fff7a6', dot:'#ffe34d' };                 // yellow
+  }
+  if (indicator === 'universal') {
+    const c = universalColor(ph);
+    return { bg: c, dot: c };
+  }
+  // fallback
+  return { bg:'#f7f7f7', dot:'#f7f7f7' };
 }
+
 
 // Update the whole visual state
 function updateBuretteUI() {
@@ -632,15 +710,27 @@ function updateBuretteUI() {
   svgBurFill.setAttribute('y', y.toFixed(1));
 }
 
-  // Flask liquid level: control clip-rect height (0 at empty; grows downward)
-  if (liqRect) {
-    const basePct = 0.35; // 35% baseline
-    const extraPct = Math.min(0.20, (v / ENDPOINT) * 0.20);
-    const boxH = 170;     // from SVG (liquid area height; matches clip region area)
-    const hPx = (basePct + extraPct) * boxH;
-    liqRect.setAttribute('height', hPx.toFixed(1));
-    liqRect.setAttribute('y', (170 - hPx).toFixed(1)); // keep fill from bottom upwards
-  }
+// --- Flask liquid level (open neck + interior clip) ---
+if (liqRect) {
+  // Geometry constants that match your SVG (so no hidden magic numbers)
+  const BOX_H   = 170;  // total drawable height of the liquid region
+  const BASE_Y  = 170;  // y-position of the *empty* surface (bottom of box)
+
+  // How “full” the flask looks (baseline + extra up to endpoint)
+  const BASELINE  = 0.35;  // 35% visible even at v=0 (looks nicer)
+  const EXTRA_MAX = 0.20;  // can rise +20% as you approach endpoint
+
+  const v = parseFloat(burSlider.value) || 0;
+  const e = Math.max(1e-6, ENDPOINT);               // avoid /0
+  const frac = Math.max(0, Math.min(1, v / e));     // clamp 0..1
+
+  const hPx = (BASELINE + EXTRA_MAX * frac) * BOX_H;
+
+  // Write once, rounded for DOM attributes
+  liqRect.setAttribute('height', hPx.toFixed(1));
+  liqRect.setAttribute('y', (BASE_Y - hPx).toFixed(1)); // grow upward
+}
+
 
   // pH + colour
   const ph = approxPH(v);
