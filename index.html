@@ -43,9 +43,13 @@ h2 { margin-top: 0; color: #003366; }
   /* --- Lab layout --- */
 .lab-grid {
   display: grid;
-  grid-template-columns: 340px 1fr;   /* left controls, right visuals */
+  grid-template-columns: 340px 1fr;  /* controls | big visuals */
   gap: 18px;
   align-items: start;
+}
+
+.visuals {
+  display: block;   /* one big area for the SVG */
 }
 
 /* Card look for controls */
@@ -80,7 +84,12 @@ h2 { margin-top: 0; color: #003366; }
   position: sticky;
   top: 12px;
 }
-
+<!-- Graph -->
+<div>
+  <hr style="margin:10px 0; border:none; border-top:1px solid #e5e7eb;">
+  <div style="margin-top:10px;"><b>pH vs volume added</b></div>
+  <canvas id="ph-graph" width="320" height="220"></canvas>
+</div>
 
 .readout { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background:#fff; border:1px solid #ddd; padding:4px 8px; border-radius:6px; display:inline-block; }
 .ctrl-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
@@ -297,19 +306,20 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
     <!-- internal fill (so you can show “fullness”) -->
     <rect id="bur-fill-svg" x="2" y="2" width="40" height="430" rx="10" fill="#cfe3ff" opacity=".6"/>
 
-    <!-- ticks -->
-    <g id="buretteTicks">
-      <g class="svg-tick">
-        <line x1="44" y1="20" x2="70" y2="20"/>
-        <line x1="44" y1="70" x2="70" y2="70"/>
-        <line x1="44" y1="120" x2="70" y2="120"/>
-        <line x1="44" y1="170" x2="70" y2="170"/>
-        <line x1="44" y1="220" x2="70" y2="220"/>
-        <line x1="44" y1="270" x2="70" y2="270"/>
-        <line x1="44" y1="320" x2="70" y2="320"/>
-        <line x1="44" y1="370" x2="70" y2="370"/>
-        <line x1="44" y1="420" x2="70" y2="420"/>
-      </g>
+    <!-- ticks (inside the tube) -->
+<g id="buretteTicks" class="svg-tick">
+  <!-- long ticks every 50 px -->
+  <line x1="4"  y1="20"  x2="18" y2="20"/>
+  <line x1="4"  y1="70"  x2="18" y2="70"/>
+  <line x1="4"  y1="120" x2="18" y2="120"/>
+  <line x1="4"  y1="170" x2="18" y2="170"/>
+  <line x1="4"  y1="220" x2="18" y2="220"/>
+  <line x1="4"  y1="270" x2="18" y2="270"/>
+  <line x1="4"  y1="320" x2="18" y2="320"/>
+  <line x1="4"  y1="370" x2="18" y2="370"/>
+  <line x1="4"  y1="420" x2="18" y2="420"/>
+</g>
+
     </g>
 
     <!-- stopcock block -->
@@ -343,11 +353,7 @@ Indicator dropdown: Phenolphthalein / Methyl Orange / Litmus
 </svg>
    
 
-      <!-- Graph -->
-      <div>
-        <div style="margin-top:10px;"><b>pH vs volume added</b></div>
-        <canvas id="ph-graph" width="320" height="220"></canvas>
-      </div>
+     
 
     </div>
   </div>
@@ -610,11 +616,13 @@ function updateBuretteUI() {
 
   // Burette "fullness" (height of the inner rect decreases as volume added increases)
   if (svgBurFill) {
-    const max = parseFloat(burSlider.max) || 30;
-    const tubeInnerH = 430;  // from SVG (height of bur-fill-svg)
-    const h = Math.max(0, tubeInnerH * (1 - v / max));
-    svgBurFill.setAttribute('height', h.toFixed(1));
-  }
+  const max = parseFloat(burSlider.max) || 30;
+  const tubeInnerH = 430;                    // height of bur-fill-svg in SVG
+  const h = Math.max(0, tubeInnerH * (1 - v / max));
+  const y = 2 + (tubeInnerH - h);            // move top down as it empties
+  svgBurFill.setAttribute('height', h.toFixed(1));
+  svgBurFill.setAttribute('y', y.toFixed(1));
+}
 
   // Flask liquid level: control clip-rect height (0 at empty; grows downward)
   if (liqRect) {
@@ -647,19 +655,19 @@ function ensureStreamEl() {
 function positionStream() {
   if (!spoutTip || !liqRect) return;
 
-  // start: center of #spout-tip circle
-  const cx = parseFloat(spoutTip.getAttribute('cx')) || 0;
-  const cy = parseFloat(spoutTip.getAttribute('cy')) || 0;
-  const start = svgToScreen(spoutTip, cx, cy);
+  // start: spout tip centre
+  const sx = +spoutTip.getAttribute('cx');
+  const sy = +spoutTip.getAttribute('cy');
+  const start = svgToScreen(spoutTip, sx, sy);
 
-  // end: centre-top of the liquid clip-rect (#liq-level)
-  const lx = parseFloat(liqRect.getAttribute('x')) || -120;  // defaults from SVG
-  const lw = parseFloat(liqRect.getAttribute('width')) || 240;
-  const ly = parseFloat(liqRect.getAttribute('y')) || 170;
-  const end = svgToScreen(liqRect, lx + lw/2, ly);           // the “surface”
+  // end: liquid surface centre (top edge of clip rect)
+  const lx = +liqRect.getAttribute('x');
+  const lw = +liqRect.getAttribute('width');
+  const ly = +liqRect.getAttribute('y');
+  const end = svgToScreen(liqRect, lx + lw/2, ly);
 
   const el = ensureStreamEl();
-  el.style.left   = `${start.x - 3}px`;                      // 6px stream centred
+  el.style.left   = `${start.x - 3}px`;
   el.style.top    = `${start.y}px`;
   el.style.height = `${Math.max(6, end.y - start.y)}px`;
 }
@@ -676,14 +684,14 @@ function spawnDrop(step = 0.05) {
   if (!spoutTip || !liqRect) return;
 
   // start at spout tip
-  const cx = parseFloat(spoutTip.getAttribute('cx')) || 0;
-  const cy = parseFloat(spoutTip.getAttribute('cy')) || 0;
-  const start = svgToScreen(spoutTip, cx, cy);
+  const sx = +spoutTip.getAttribute('cx');
+  const sy = +spoutTip.getAttribute('cy');
+  const start = svgToScreen(spoutTip, sx, sy);
 
   // target = liquid surface centre
-  const lx = parseFloat(liqRect.getAttribute('x')) || -120;
-  const lw = parseFloat(liqRect.getAttribute('width')) || 240;
-  const ly = parseFloat(liqRect.getAttribute('y')) || 170;
+  const lx = +liqRect.getAttribute('x');
+  const lw = +liqRect.getAttribute('width');
+  const ly = +liqRect.getAttribute('y');
   const target = svgToScreen(liqRect, lx + lw/2, ly);
 
   const drop = document.createElement('div');
@@ -707,6 +715,7 @@ function spawnDrop(step = 0.05) {
     setTimeout(() => drop.remove(), 200);
   }, { once: true });
 }
+
 
 // Buttons
 dripBtn.addEventListener('click', () => {
