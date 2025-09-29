@@ -1,1 +1,10 @@
-// placeholder for package.json
+{
+  "name": "chemistry-with-shane-balancer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:parser": "node --input-type=module ./balancer/tests/parser.spec.js",
+    "test:solver": "node --input-type=module ./balancer/tests/solver.spec.js"
+  }
+}
+
