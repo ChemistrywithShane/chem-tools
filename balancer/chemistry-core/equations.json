@@ -1,0 +1,18 @@
+[
+  {"id":"combust_methane","level":["GCSE"],"topic":"combustion","reactants":["CH4","O2"],"products":["CO2","H2O"]},
+  {"id":"combust_ethanol","level":["GCSE"],"topic":"combustion","reactants":["C2H5OH","O2"],"products":["CO2","H2O"]},
+  {"id":"combust_propane","level":["GCSE"],"topic":"combustion","reactants":["C3H8","O2"],"products":["CO2","H2O"]},
+
+  {"id":"neut_hcl_naoh","level":["GCSE"],"topic":"neutralisation","reactants":["HCl","NaOH"],"products":["NaCl","H2O"]},
+  {"id":"neut_h2so4_naoh","level":["GCSE"],"topic":"neutralisation","reactants":["H2SO4","NaOH"],"products":["Na2SO4","H2O"]},
+
+  {"id":"ppt_agcl","level":["GCSE"],"topic":"precipitation","reactants":["AgNO3","NaCl"],"products":["AgCl","NaNO3"]},
+
+  {"id":"decomp_caco3","level":["GCSE"],"topic":"thermal_decomposition","reactants":["CaCO3"],"products":["CaO","CO2"]},
+
+  {"id":"disp_zn_cuso4","level":["GCSE"],"topic":"displacement","reactants":["Zn","CuSO4"],"products":["ZnSO4","Cu"]},
+
+  {"id":"formation_iron_oxide","level":["GCSE"],"topic":"oxidation","reactants":["Fe","O2"],"products":["Fe2O3"]},
+
+  {"id":"kmno4_heat","level":["ALevel"],"topic":"redox","reactants":["KMnO4"],"products":["K2MnO4","MnO2","O2"]}
+]
