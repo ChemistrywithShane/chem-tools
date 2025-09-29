@@ -1,64 +1,85 @@
-// Parses chemical formulas incl. parentheses, hydrates (·, ., or *), and charges (^2-, ^+, etc).
-// Returns an element count map; charge (if present) is stored under the key "charge".
+// Parses chemical formulas incl. parentheses, hydrates (·, ., or *), and charges (^2-, ^+, etc.).
+// Returns an element-count map; charge (if present) is stored under the key "(charge)".
 export function parseFormula(str) {
   if (!str) return {};
 
-  // 1) Normalise: remove whitespace; turn hydrate separators into '*'
-  //    Accept: middle dot `·`, explicit `*`, and a dot just before H2O like "CuSO4.5H2O"
+  // 1) Normalise separators & whitespace
   let s = String(str).trim().replace(/\s+/g, '');
-  s = s.replace(/·/g, '*');
-  s = s.replace(/\.(?=(\d+)?H2O\b)/gi, '*'); // e.g. CuSO4.5H2O -> CuSO4*5H2O
+  s = s.replace(/·/g, '*');                 // middle dot -> *
+  s = s.replace(/\.(?=(\d+)?H2O\b)/gi, '*'); // plain dot before H2O -> *
+  // leave '^...+/-' charge tail for us to read now
 
-  // 2) Extract an overall ionic charge at the end (optional):
-  //    Supported tails: ^2-, ^-, ^3+, ^+
-  //    If absent, charge = 0
+  // 2) Pull charge tail like ^2-, ^-, ^3+, ^+
   let charge = 0;
-  const chargeMatch = s.match(/\^([0-9]*)\s*([+-])$/);
-  if (chargeMatch) {
-    const mag = chargeMatch[1] ? parseInt(chargeMatch[1], 10) : 1;
-    const sign = (chargeMatch[2] === '-') ? -1 : +1;
+  const mCharge = s.match(/\^([0-9]*)\s*([+-])$/);
+  if (mCharge) {
+    const mag = mCharge[1] ? parseInt(mCharge[1], 10) : 1;
+    const sign = (mCharge[2] === '-') ? -1 : +1;
     charge = sign * mag;
-    s = s.slice(0, chargeMatch.index); // strip the charge tail from the formula
+    s = s.slice(0, mCharge.index); // strip charge suffix
   }
 
-  // 3) Split on '*' which (after normalisation) means "hydrate part"
-  //    e.g. "CuSO4*5H2O" => ["CuSO4", "5H2O"]
+  // 3) Split hydrate fragments on *
   const parts = s.split('*').filter(Boolean);
 
-  // 4) Accumulate counts across all parts (core + hydrates)
+  // 4) Accumulate counts (core + hydrate fragments)
   const total = {};
-  for (const raw of parts) {
-    // Hydrate shorthand: "nH2O" where n is integer
-    const hyd = raw.match(/^([0-9]+)H2O$/i);
+  for (const frag of parts) {
+    // hydrate shorthand "nH2O"
+    const hyd = frag.match(/^([0-9]+)H2O$/i);
     if (hyd) {
       const n = parseInt(hyd[1], 10);
-      add(total, { H: 2 * n, O: 1 * n });
+      total['H'] = (total['H'] || 0) + 2 * n;
+      total['O'] = (total['O'] || 0) + 1 * n;
       continue;
     }
-
-    // Otherwise parse a regular core fragment with parentheses, multipliers etc.
-    const coreCounts = parseCore(raw);
-    add(total, coreCounts);
+    // normal core with parentheses/multipliers
+    add(total, parseCore(frag));
   }
-
-  if (charge !== 0) total['charge'] = (total['charge'] || 0) + charge;
+  if (charge !== 0) total['(charge)'] = (total['(charge)'] || 0) + charge;
   return total;
 }
 
-// ---- parser for a single fragment (no '*' left), handling parentheses and multipliers ----
+// Build stoichiometry matrix from reactant/product lists.
+// includeCharge: whether to include a charge-balance row.
+export function buildMatrixFromReaction(reactants, products, includeCharge = false) {
+  const species = [...reactants, ...products];
+  const parsed = species.map(parseFormula);
+
+  const elems = new Set();
+  for (const m of parsed) {
+    for (const k of Object.keys(m)) {
+      if (k === '(charge)' && !includeCharge) continue;
+      elems.add(k);
+    }
+  }
+  const rows = Array.from(elems);
+  const A = rows.map(() => Array(species.length).fill(0));
+
+  rows.forEach((el, r) => {
+    species.forEach((_, c) => {
+      const v = parsed[c][el] || 0;
+      A[r][c] = (c < reactants.length) ? v : -v;
+    });
+  });
+
+  return { A, rows, species };
+}
+
+// ---------- internal: parse a single fragment (no '*' left) ----------
 function parseCore(formula) {
   let i = 0;
   const len = formula.length;
 
   function readNumber() {
     let num = '';
-    while (i < len && /[0-9]/.test(formula[i])) { num += formula[i++]; }
+    while (i < len && /[0-9]/.test(formula[i])) num += formula[i++];
     return num ? parseInt(num, 10) : 1;
   }
 
   function readElement() {
     if (i >= len || !/[A-Z]/.test(formula[i])) return null;
-    let sym = formula[i++]; // uppercase
+    let sym = formula[i++];                      // capital
     if (i < len && /[a-z]/.test(formula[i])) sym += formula[i++]; // optional lowercase
     return sym;
   }
@@ -70,22 +91,15 @@ function parseCore(formula) {
 
       if (ch === '(') {
         i++; // skip '('
-        const inner = parseGroup(); // parse recursively
-        if (i >= len || formula[i] !== ')') {
-          throw new Error('Unmatched "(" in ' + formula);
-        }
-        i++; // skip ')'
+        const inner = parseGroup();
+        if (i >= len || formula[i] !== ')') throw new Error('Unmatched "(" in ' + formula);
+        i++; // ')'
         const mult = readNumber();
         scaleAndAdd(out, inner, mult);
         continue;
       }
+      if (ch === ')') break;
 
-      if (ch === ')') {
-        // group end - handled by caller
-        break;
-      }
-
-      // Element symbol
       const el = readElement();
       if (el) {
         const n = readNumber();
@@ -93,9 +107,8 @@ function parseCore(formula) {
         continue;
       }
 
-      // Anything else means we've reached an unexpected character
-      // Common benign case: we already stripped charge; so throw if encountered.
-      throw new Error('Unexpected character "' + ch + '" in ' + formula + ' at ' + i);
+      // Unexpected character -> stop to avoid infinite loop
+      throw new Error('Unexpected "' + ch + '" in ' + formula + ' at ' + i);
     }
     return out;
   }
@@ -103,16 +116,10 @@ function parseCore(formula) {
   return parseGroup();
 }
 
-// ---- helpers ----
-function scaleAndAdd(target, src, k) {
-  for (const key in src) {
-    target[key] = (target[key] || 0) + k * src[key];
-  }
+// ---------- small helpers ----------
+function add(dst, src) {
+  for (const k in src) dst[k] = (dst[k] || 0) + src[k];
 }
-
-function add(target, src) {
-  for (const key in src) {
-    target[key] = (target[key] || 0) + src[key];
-  }
+function scaleAndAdd(dst, src, m) {
+  for (const k in src) dst[k] = (dst[k] || 0) + m * src[k];
 }
-
