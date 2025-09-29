@@ -3,6 +3,13 @@
 export function parseFormula(str){
   let s = str.replace(/\s+/g,'').replace('→','->');
   const parts = s.split(/[·*\.]/g);
+  const mHyd = partRaw.match(/^([0-9]+)H2O$/i);
+if (mHyd) {
+  const n = parseInt(mHyd[1], 10);
+  counts['H'] = (counts['H'] || 0) + 2 * n;
+  counts['O'] = (counts['O'] || 0) + 1 * n;
+  continue;
+}
   const counts = {};
   for(const partRaw of parts){
    if(!partRaw) continue;
