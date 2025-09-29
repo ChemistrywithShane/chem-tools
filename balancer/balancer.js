@@ -92,4 +92,14 @@ function renderTallies(reactants, products, coeffs, includeCharge){
     line.innerHTML = `<span class="badge">${el}</span> <span class="${equal?'equal':'off'}">${L[el]||0} : ${R[el]||0}</span>`;
     wrap.appendChild(line);
   });
+  // Reset: clear all inputs, tallies, and result
+$('#reset').onclick = () => {
+  $$('#reactants .species, #products .species').forEach(i => i.value = '');
+  $('#tallies').innerHTML = '';
+  $('#result').textContent = '—';
+  $('#status').textContent = '—';
+  $('#chargeToggle').checked = false;
+  // keep the extra boxes the user added – feels nicer during demos
+};
+
 }
