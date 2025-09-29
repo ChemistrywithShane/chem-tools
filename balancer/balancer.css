@@ -24,3 +24,5 @@ button.ghost{background:#fff;border-style:dashed}
 .badge{display:inline-block;padding:2px 8px;border-radius:999px;background:#eef2ff;border:1px solid #c7d2fe;font-size:12px}
 .equal{color:var(--ok)} .off{color:var(--warn)}
 .foot{color:var(--muted);text-align:center;padding:16px}
+.tiny-clear{ font-size:12px; margin-left:8px; color:var(--muted); text-decoration:none; border:1px dashed var(--border); padding:2px 6px; border-radius:8px}
+.tiny-clear:hover{ color:#111; background:#f3f4f6 }
