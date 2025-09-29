@@ -2,10 +2,17 @@
 // Returns an element-count map; charge (if present) is stored under the key "(charge)".
 export function parseFormula(str){
   let s = str.replace(/\s+/g,'').replace('→','->');
-  const parts = s.split(/[·*.]/g);   // accept middle dot, asterisk, or period
+  const parts = s.split(/[·*\\.]/g);
   const counts = {};
   for(const partRaw of parts){
     if(!partRaw) continue;
+      // If part starts with a number, treat it as "n H2O"
+  if(/^[0-9]+H2O$/.test(partRaw)){
+    const n = parseInt(partRaw.match(/^[0-9]+/)[0],10);
+    counts['H'] = (counts['H']||0) + 2*n;
+    counts['O'] = (counts['O']||0) + 1*n;
+    continue;
+  }
     const mCharge = partRaw.match(/\^(?:([0-9]+)?([+-]))$/);
     let core = partRaw;
     if(mCharge){
