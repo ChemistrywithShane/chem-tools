@@ -17,3 +17,20 @@ const {A, rows} = buildMatrixFromReaction(["H2","O2"],["H2O"]);
 console.log("Rows:", rows, "A0:", A[0]);
 
 console.log("parser.spec.js: ok");
+// --- Hydrate parsing tests ---
+import { parseFormula } from "../chemistry-core/parser.js";
+
+function assertEqual(a,b,msg){
+  const ja=JSON.stringify(a), jb=JSON.stringify(b);
+  if(ja!==jb){ throw new Error((msg||"assertEqual failed") + "\n" + ja + "\n" + jb); }
+}
+
+// Middle dot, asterisk, and plain dot must all work
+assertEqual(parseFormula("CuSO4·5H2O"), {"Cu":1,"S":1,"O":9,"H":10}, "hydrate: middle dot");
+assertEqual(parseFormula("CuSO4*5H2O"), {"Cu":1,"S":1,"O":9,"H":10}, "hydrate: asterisk");
+assertEqual(parseFormula("CuSO4.5H2O"), {"Cu":1,"S":1,"O":9,"H":10}, "hydrate: plain dot");
+
+// Mixed case should also be accepted
+assertEqual(parseFormula("cuso4·5h2o"), {"Cu":1,"S":1,"O":9,"H":10}, "hydrate: case-insensitive");
+console.log("parser.spec.js: hydrate tests ok");
+
