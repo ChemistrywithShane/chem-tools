@@ -1,1 +1,173 @@
 
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chemistry with Shane – Mole Master</title>
+<meta name="color-scheme" content="light only">
+<style>
+  :root{
+    --brandA:#7c3aed; --brandB:#22d3ee; --ink:#0b1324; --muted:#6b7280; --border:#e5e7eb; --card:#fff;
+    --accent:#f59e0b; --good:#10b981; --danger:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto;background:radial-gradient(1200px 600px at 70% -20%, rgba(34,211,238,0.25), transparent 60%),linear-gradient(#f8fafc,#ffffff 40%);color:var(--ink)}
+  .container{max-width:1100px;margin:0 auto;padding:16px}
+  .header{position:sticky;top:0;z-index:10;background:linear-gradient(90deg,var(--brandA),var(--brandB));color:#fff;border-bottom:2px solid rgba(255,255,255,.25);box-shadow:0 10px 25px rgba(124,58,237,.25)}
+  .header-inner{display:flex;align-items:center;gap:14px;padding:12px 16px}
+  .logo{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 35% 35%, #ffffff 0 25%, #ffe08a 26% 28%, var(--accent) 29% 40%, #ffffff 41% 41%, transparent 42%),radial-gradient(circle at 70% 65%, #ffffff 0 15%, #a7f3d0 16% 22%, #34d399 23% 32%, transparent 33%);display:grid;place-items:center;box-shadow:0 0 0 3px rgba(255,255,255,.5), 0 8px 20px rgba(0,0,0,.15);position:relative}
+  .logo::after{content:"⚛";font-size:22px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25));animation:spin 8s linear infinite}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  h1.brand{margin:0;font-size:20px;font-weight:800;letter-spacing:.3px;text-shadow:0 2px 10px rgba(0,0,0,.15)}
+  .navlinks a{color:white;text-decoration:none;font-weight:600;padding:6px 10px;border:1px solid rgba(255,255,255,.25);border-radius:8px}
+  .navlinks{display:flex;gap:8px;margin-left:auto}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  .grid{display:grid;gap:16px}
+  @media(min-width:900px){.two{grid-template-columns:1fr 1fr} .three{grid-template-columns:1fr 1fr 1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 4px 14px rgba(17,24,39,.06)}
+  .card h2{margin:0;padding:12px 14px;border-bottom:1px dashed var(--border);font-size:18px;position:relative}
+  .card h2::after{content:"";position:absolute;left:14px;right:14px;bottom:10px;height:6px;border-radius:999px;background:linear-gradient(90deg,#fde68a,#a7f3d0,#bae6fd);opacity:.4}
+  .card .content{padding:12px 14px}
+  .row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+  input[type=text], input[type=number], select{padding:10px 12px;border:1px solid var(--border);border-radius:10px;width:100%;font-weight:600}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:12px;border:1px solid var(--border);background:#fff;padding:10px 12px;cursor:pointer;font-weight:700}
+  .btn.primary{background:linear-gradient(90deg,var(--brandA),var(--brandB));color:white;border:none;box-shadow:0 6px 14px rgba(34,211,238,.3)}
+  .btn.ghost{background:transparent}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--border);font-size:12px;background:#fff}
+  .hint{font-size:12px;color:var(--muted)}
+  .big{font:800 30px/1 ui-monospace,SFMono-Regular,Menlo,Consolas}
+  svg{max-width:100%}
+  .beaker{width:100%;height:220px}
+  .atoms circle{opacity:.9}
+  .spark{animation:spark 1.2s ease-in-out infinite}
+  @keyframes spark{0%{transform:translateY(0)}50%{transform:translateY(-7px)}100%{transform:translateY(0)}}
+  .unit{font-weight:800}
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-inner container">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1 class="brand">Chemistry with Shane</h1>
+        <div style="opacity:.9">Mole Master — count the uncountable</div>
+      </div>
+      <div class="navlinks">
+        <a href="../">🏠 Home</a>
+        <a href="../hub/">✨ Classroom Hub</a>
+        <a href="../titration/">⚗️ Titration Tool</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container grid">
+    <div class="card">
+      <h2>Visual Mole Lab</h2>
+      <div class="content two grid">
+        <div>
+          <label>Substance (for M)</label>
+          <select id="substance">
+            <option value="18">Water (H₂O) — 18 g/mol</option>
+            <option value="58.44">Sodium chloride (NaCl) — 58.44 g/mol</option>
+            <option value="44.01">Carbon dioxide (CO₂) — 44.01 g/mol</option>
+            <option value="98.08">Sulfuric acid (H₂SO₄) — 98.08 g/mol</option>
+            <option value="24.31">Magnesium (Mg) — 24.31 g/mol</option>
+            <option value="180.16">Glucose (C₆H₁₂O₆) — 180.16 g/mol</option>
+          </select>
+        </div>
+        <div>
+          <label>Mass (g)</label>
+          <input type="text" id="mass" placeholder="e.g., 18">
+        </div>
+        <div>
+          <label>Molar Mass, M (g/mol)</label>
+          <input type="text" id="mm" placeholder="auto from substance">
+        </div>
+        <div>
+          <label>Moles, n</label>
+          <input type="text" id="moles" placeholder="auto">
+        </div>
+        <div class="row">
+          <button class="btn primary" id="btn-n">n = m / M</button>
+          <button class="btn" id="btn-m">m = n × M</button>
+          <button class="btn ghost" id="btn-reset">Reset</button>
+          <span class="pill">Entities ≈ <span id="entities">—</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Beaker & Atoms</h2>
+      <div class="content two grid">
+        <div>
+          <svg class="beaker" viewBox="0 0 360 220" aria-label="animated beaker">
+            <defs>
+              <linearGradient id="liquid" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#22d3ee"/>
+                <stop offset="100%" stop-color="#7c3aed"/>
+              </linearGradient>
+              <clipPath id="flask-shape">
+                <path d="M150,15 h60 v20 l70,130 a10,10 0 0 1 -9,15 h-182 a10,10 0 0 1 -9-15 l70-130 z"/>
+              </clipPath>
+            </defs>
+            <path d="M150,15 h60 v20 l70,130 a10,10 0 0 1 -9,15 h-182 a10,10 0 0 1 -9-15 l70-130 z" fill="none" stroke="#475569" stroke-width="3" />
+            <g clip-path="url(#flask-shape)">
+              <rect id="fill" x="80" y="170" width="200" height="120" fill="url(#liquid)"/>
+              <path id="wave" d="M80,160 C120,150 160,170 200,160 C240,150 280,170 320,160 L320,220 L80,220 Z" fill="rgba(255,255,255,.25)">
+                <animate attributeName="d" dur="3s" repeatCount="indefinite"
+                  values="M80,160 C120,150 160,170 200,160 C240,150 280,170 320,160 L320,220 L80,220 Z;
+                          M80,165 C120,155 160,165 200,170 C240,165 280,175 320,165 L320,220 L80,220 Z;
+                          M80,160 C120,150 160,170 200,160 C240,150 280,170 320,160 L320,220 L80,220 Z"/>
+              </path>
+            </g>
+            <g class="atoms"></g>
+          </svg>
+          <div class="hint">Fill level maps to moles. Atoms bubble as entity count rises.</div>
+        </div>
+        <div>
+          <div class="big"><span id="nOut">n = —</span></div>
+          <div class="row" style="margin-top:10px">
+            <span class="pill">m = <span id="mOut">—</span> g</span>
+            <span class="pill">M = <span id="MOut">—</span> g·mol⁻¹</span>
+          </div>
+          <div style="margin-top:12px">
+            <div class="hint">Unit bridge:</div>
+            <div style="font:700 16px/1.4 ui-monospace">
+              n = m ÷ M
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <button class="btn" id="btn-copy">Copy results</button>
+            <span class="hint" id="copied" style="display:none">Copied!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Retrieval Practice</h2>
+      <div class="content">
+        <div class="row">
+          <label>Friction dial</label>
+          <input type="range" min="1" max="5" step="1" id="difficulty" value="2">
+          <button class="btn primary" id="draw">Draw</button>
+        </div>
+        <div id="deck"></div>
+      </div>
+    </div>
+  </div>
+<script>
+  const $ = (q, r=document)=>r.querySelector(q);
+  const fmt = (x)=>{const n=Number(x);if(!isFinite(n))return '—';const exp=Math.abs(n)>=1e6||(Math.abs(n)>0&&Math.abs(n)<=1e-3);return exp?n.toExponential(3):String(Math.round(n*10000)/10000)};
+  const sel=$('#substance'),mass=$('#mass'),mm=$('#mm'),n=$('#moles'),nOut=$('#nOut'),mOut=$('#mOut'),MOut=$('#MOut'),entities=$('#entities');
+  function recalc(from){let M=parseFloat(mm.value);if(!isFinite(M)||from==='sel')M=parseFloat(sel.value);const m=parseFloat(mass.value);let N=parseFloat(n.value);if(from==='n'){if(isFinite(N)&&isFinite(M))mass.value=N*M}else{if(isFinite(m)&&isFinite(M)&&M!==0)N=m/M;if(!isFinite(N))N=NaN;n.value=isNaN(N)?'':N}mm.value=isFinite(M)?M:'';nOut.textContent='n = '+fmt(N);mOut.textContent=fmt(mass.value);MOut.textContent=fmt(M);entities.textContent=fmt((N||0)*6.022e23);renderBeaker(N);bubbleAtoms(N)}
+  $('#btn-n').onclick=()=>recalc('m');$('#btn-m').onclick=()=>recalc('n');$('#btn-reset').onclick=()=>{mass.value='';n.value='';recalc()};sel.onchange=()=>recalc('sel');mass.oninput=()=>recalc('m');mm.oninput=()=>recalc('m');n.oninput=()=>recalc('n');
+  function renderBeaker(N){const level=Math.max(0,Math.min(1,(N||0)/2));const y=220-(level*140)-50;$('#fill').setAttribute('y',y)}
+  function bubbleAtoms(N){const g=document.querySelector('.atoms');g.innerHTML='';const count=Math.max(3,Math.min(32,Math.round((N||0)*12+3)));for(let i=0;i<count;i++){const cx=90+Math.random()*180,cy=150+Math.random()*60,r=4+Math.random()*5,c=['#22d3ee','#7c3aed','#a78bfa','#38bdf8'][i%4];const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('cx',cx);dot.setAttribute('cy',cy);dot.setAttribute('r',r);dot.setAttribute('fill',c);dot.setAttribute('class','spark');g.appendChild(dot);}}
+  const BANK=[{q:'Define the mole.',a:'Amount of substance with 6.022×10^23 entities.'},{q:'What is Avogadro’s constant?',a:'6.022×10^23 mol⁻¹'},{q:'Calculate moles in 36 g of water (M=18).',a:'2 mol'},{q:'Mass of 0.25 mol NaCl (M=58.44).',a:'≈14.61 g'},{q:'How many molecules in 0.1 mol CO₂?',a:'0.1×6.022×10^23'},{q:'Why is the mole useful?',a:'It maps particle counts to measurable mass for reactions.'}];
+  $('#draw').onclick=()=>{const k=parseInt($('#difficulty').value)||2;const deck=$('#deck');deck.innerHTML='';const shuffled=[...BANK].sort(()=>Math.random()-0.5).slice(0,k);shuffled.forEach((item,i)=>{const card=document.createElement('details');card.innerHTML=`<summary>Q${i+1}. ${item.q}</summary><div class="hint" style="margin-top:6px">${item.a}</div>`;card.className='card';const c=document.createElement('div');c.className='content';card.append(c);deck.append(card);})}
+  $('#btn-copy').onclick=async()=>{const text=`${nOut.textContent} | m=${mOut.textContent} g | M=${MOut.textContent} g/mol | entities≈${entities.textContent}`;try{await navigator.clipboard.writeText(text);$('#copied').style.display='inline';setTimeout(()=>$('#copied').style.display='none',1200)}catch{}}
+  recalc('sel');bubbleAtoms(0.1);
+</script>
+</body>
+</html>
+
