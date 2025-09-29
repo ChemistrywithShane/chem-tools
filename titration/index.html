@@ -1,0 +1,62 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chemistry with Shane – Titration Tool</title>
+  <meta name="color-scheme" content="light only">
+  <style>
+    :root{
+      --brandA:#7c3aed; --brandB:#22d3ee;
+      --ink:#0b1324; --muted:#6b7280; --border:#e5e7eb; --card:#fff;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto;background:linear-gradient(#eef6ff,#fff);color:var(--ink)}
+    .container{max-width:1100px;margin:0 auto;padding:16px}
+    .header{position:sticky;top:0;z-index:10;background:linear-gradient(90deg,var(--brandA),var(--brandB));color:#fff;border-bottom:2px solid rgba(255,255,255,.25);box-shadow:0 10px 25px rgba(124,58,237,.25)}
+    .header-inner{display:flex;align-items:center;gap:14px;padding:12px 16px}
+    .logo{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 35% 35%, #ffffff 0 25%, #ffe08a 26% 28%, #f59e0b 29% 40%, #ffffff 41% 41%, transparent 42%),radial-gradient(circle at 70% 65%, #ffffff 0 15%, #a7f3d0 16% 22%, #34d399 23% 32%, transparent 33%);display:grid;place-items:center;box-shadow:0 0 0 3px rgba(255,255,255,.5), 0 8px 20px rgba(0,0,0,.15);position:relative}
+    .logo::after{content:"⚗";font-size:22px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25));}
+    h1.brand{margin:0;font-size:20px;font-weight:800;letter-spacing:.3px;text-shadow:0 2px 10px rgba(0,0,0,.15)}
+    .navlinks a{color:white;text-decoration:none;font-weight:600;padding:6px 10px;border:1px solid rgba(255,255,255,.25);border-radius:8px}
+    .navlinks{display:flex;gap:8px;margin-left:auto}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 4px 14px rgba(17,24,39,.06);margin-top:16px}
+    .card h2{margin:0;padding:12px 14px;border-bottom:1px dashed var(--border);font-size:18px}
+    .card .content{padding:12px 14px}
+    .hint{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-inner container">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1 class="brand">Chemistry with Shane</h1>
+        <div class="hint" style="color:#fff;opacity:.9">Titrations • Indicators • Curves</div>
+      </div>
+      <div class="navlinks">
+        <a href="../">🏠 Home</a>
+        <a href="../hub/">✨ Classroom Hub</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <h2>Your Titration Tool</h2>
+      <div class="content">
+        <!-- ===================== PASTE YOUR EXISTING TITRATION HTML BELOW =====================
+             Tip: open your current repo index.html, copy ONLY the app markup and scripts,
+             and paste here. If you reference external files (CSS/JS), upload them in /titration/.
+             ============================================================================= -->
+        <div id="titration-app">
+          <p class="hint">Paste your titration app here. If it uses <canvas> or SVG, drop it right in.</p>
+        </div>
+        <!-- ===================== END PASTE AREA ===================== -->
+      </div>
+    </div>
+  </div>
+</body>
+</html>

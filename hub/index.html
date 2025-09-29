@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chemistry with Shane – Classroom Hub</title>
+  <meta name="color-scheme" content="light only">
+  <style>
+    :root{
+      --brandA:#7c3aed;   --brandB:#22d3ee;   --ink:#0b1324;
+      --bg1:#f8fafc;      --bg2:#ffffff;      --muted:#6b7280;
+      --card:#ffffff;     --border:#e5e7eb;   --accent:#f59e0b;
+      --good:#10b981;     --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0; padding:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial}
+    body{
+      background: radial-gradient(1200px 600px at 70% -20%, rgba(34,211,238,0.25), transparent 60%),
+                  linear-gradient(#f8fafc,#ffffff 40%);
+      color:var(--ink);
+    }
+    .container{max-width:1100px; margin:0 auto; padding:16px}
+    .header{
+      position:sticky; top:0; z-index:10;
+      background:linear-gradient(90deg, var(--brandA), var(--brandB));
+      color:white;
+      border-bottom:2px solid rgba(255,255,255,.25);
+      box-shadow:0 10px 25px rgba(124,58,237,.25);
+    }
+    .header-inner{display:flex; align-items:center; gap:14px; padding:12px 16px}
+    .logo{
+      width:40px; height:40px; border-radius:50%;
+      background:radial-gradient(circle at 35% 35%, #ffffff 0 25%, #ffe08a 26% 28%, var(--accent) 29% 40%, #ffffff 41% 41%, transparent 42%),
+                 radial-gradient(circle at 70% 65%, #ffffff 0 15%, #a7f3d0 16% 22%, #34d399 23% 32%, transparent 33%);
+      display:grid; place-items:center;
+      box-shadow:0 0 0 3px rgba(255,255,255,.5), 0 8px 20px rgba(0,0,0,.15);
+      position:relative;
+    }
+    .logo::after{
+      content:"⚛"; font-size:22px; filter:drop-shadow(0 2px 2px rgba(0,0,0,.25));
+      animation:spin 8s linear infinite;
+    }
+    @keyframes spin{ from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
+    h1.brand{margin:0; font-size:20px; font-weight:800; letter-spacing:.3px; text-shadow:0 2px 10px rgba(0,0,0,.15)}
+    .tagline{font-size:12px; opacity:.95}
+    .search{margin-left:auto; display:flex; align-items:center; gap:8px; width:100%; max-width:520px}
+    .search input{width:100%; padding:10px 12px; border:1px solid rgba(255,255,255,.7); border-radius:10px; background:rgba(255,255,255,.15); color:white}
+    .search input::placeholder{color:#eef}
+    .navlinks a{color:white; text-decoration:none; font-weight:600; padding:6px 10px; border:1px solid rgba(255,255,255,.25); border-radius:8px}
+    .navlinks{display:flex; gap:8px; margin-left:8px}
+    .grid{display:grid; gap:16px}
+    @media(min-width:900px){ .layout{grid-template-columns: 330px 1fr} }
+    .card{background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:0 4px 14px rgba(17,24,39,.06)}
+    .card h3{margin:0; padding:12px 14px; font-size:16px; border-bottom:1px dashed var(--border); display:flex; align-items:center; gap:8px}
+    .card .content{padding:12px 14px}
+    .badge{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:999px; padding:5px 10px; font-size:12px; margin:2px; background:#fff}
+    .badge.kids{background:linear-gradient(90deg, #fef3c7, #cffafe); border-color:#fde68a}
+    .btn{display:inline-flex; align-items:center; gap:8px; border-radius:12px; border:1px solid var(--border); background:#fff; padding:10px 12px; cursor:pointer; font-weight:600}
+    .btn.primary{background:linear-gradient(90deg, var(--brandA), var(--brandB)); color:white; border:none; box-shadow:0 6px 14px rgba(34,211,238,.3)}
+    .btn.ghost{background:transparent}
+    .row{display:flex; gap:10px; align-items:end; flex-wrap:wrap}
+    label{font-size:12px; color:var(--muted); display:block; margin-bottom:4px}
+    input[type=text], input[type=number]{padding:10px 12px; border:1px solid var(--border); border-radius:10px; width:100%; font-weight:600}
+    kbd{background:#eef; border-radius:6px; padding:2px 6px; border:1px solid #c7d2fe; font-size:12px}
+    table{width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:12px; border:1px solid var(--border)}
+    th, td{padding:10px 12px; border-bottom:1px solid var(--border); font-size:14px; text-align:left}
+    th{background:#f1f5f9; font-weight:800}
+    .pill{display:inline-block; padding:4px 10px; border-radius:999px; border:1px solid var(--border); font-size:12px; background:#fff}
+    .muted{color:var(--muted)}
+    .hint{font-size:12px; color:var(--muted)}
+    .two{display:grid; gap:16px}
+    @media(min-width:900px){ .two{grid-template-columns:1fr 1fr} }
+    .footer{color:var(--muted); font-size:12px; padding:16px}
+    .title-accent{position:relative}
+    .title-accent::after{content:""; position:absolute; left:14px; right:14px; bottom:8px; height:6px; border-radius:999px; background:linear-gradient(90deg, #fde68a, #a7f3d0, #bae6fd); opacity:.4}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-inner container">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1 class="brand">Chemistry with Shane</h1>
+        <div class="tagline">Labs • Logic • Legends — learn science like an adventure</div>
+      </div>
+      <div class="search">
+        <input id="q" placeholder="Search prompts, errors, myths…  ( / to focus )">
+      </div>
+      <div class="navlinks">
+        <a href="../">🏠 Home</a>
+        <a href="../titration/">Titration Tool</a>
+        <a href="#" onclick="window.print()">Print</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container grid layout" id="app">
+    <div class="grid" id="left-rail">
+      <div class="card">
+        <h3 class="title-accent">Choose Topic <span class="badge kids">New!</span></h3>
+        <div class="content">
+          <div class="row">
+            <button class="btn primary" data-topic="moles">Moles</button>
+            <button class="btn" data-topic="stoich">Stoichiometry</button>
+            <button class="btn" data-topic="acids">Acids & Bases</button>
+          </div>
+          <p class="hint" style="margin-top:8px">Click to switch topic packs. Your settings auto‑save.</p>
+        </div>
+      </div>
+
+      <div class="card" id="timer-card">
+        <h3 class="title-accent">Lesson Timer</h3>
+        <div class="content row">
+          <div style="font:800 30px/1.1 ui-monospace, SFMono-Regular, Menlo, Consolas">
+            <span id="mm">05</span>:<span id="ss">00</span>
+          </div>
+          <button class="btn primary" id="start">Start</button>
+          <button class="btn" id="pause">Pause</button>
+          <button class="btn ghost" id="reset">Reset</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="title-accent">Quick Tips</h3>
+        <div class="content">
+          <div class="badge kids">Press <kbd>/</kbd> to search</div>
+          <div class="badge kids"><kbd>t</kbd> timer • <kbd>r</kbd> retrieval • <kbd>c</kbd> calculators</div>
+          <p class="hint">Built for 11–16s: bright, simple, and fast.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" id="main"></div>
+  </div>
+
+  <div class="container footer">
+    © Chemistry with Shane • Make atoms make sense.
+  </div>
+
+<script>
+  const TOPIC_PACKS = {
+    moles: {
+      title: "Moles",
+      mythicAnchors: [
+        { title:"The Chemist’s Key", text:"Avogadro’s number is the enchanted key that unlocks the bridge between the invisible world of atoms and the visible world of grams."},
+        { title:"The Pantheon of Particles", text:"A mole is a pantheon headcount: when you invoke it, whole legions of atoms answer at once."}
+      ],
+      commonErrors: [
+        { error:"Treating grams as moles", fix:"Always convert using n = m / M first. Grams are mass; moles are count."},
+        { error:"Assuming 1 mol = 1 g", fix:"1 mol has mass equal to molar mass M in g/mol; varies by substance."},
+        { error:"Forgetting units", fix:"Write units at every line. If units don’t cancel properly, the step is wrong."}
+      ],
+      retrievalBank: [
+        { q:"Define the mole.", a:"The amount of substance containing 6.022×10^23 entities."},
+        { q:"Calculate moles in 18 g of water (M=18 g/mol).", a:"n = 18/18 = 1 mol"},
+        { q:"How many molecules in 0.25 mol of CO2?", a:"0.25 × 6.022×10^23"},
+        { q:"Mass of 0.2 mol NaCl (M=58.5).", a:"m = nM = 11.7 g"},
+        { q:"Explain why the mole is useful.", a:"It maps atomic counts to measurable mass for reactions."}
+      ],
+      lensCascade: [
+        { lens:"Microscope", note:"Atoms/molecules too many to count individually."},
+        { lens:"Lab Bench", note:"We measure grams; need a bridge to particle counts."},
+        { lens:"World", note:"Moles make industrial scaling & dosing possible."}
+      ],
+      sandboxPrompts: [
+        "Invent a new counting unit for atoms. Justify your base number.",
+        "Design a poster that maps Dozen → Score → Mole across scales.",
+        "Create a 60‑second myth explaining Avogadro’s constant to a child."
+      ]
+    },
+    stoich: {
+      title: "Stoichiometry",
+      mythicAnchors: [
+        { title:"The Orchestra of Atoms", text:"Balanced equations are musical scores; coefficients are the notes’ counts."},
+        { title:"The Bridge of Proportions", text:"Stoichiometry is the bridge from what you have to what you can make."}
+      ],
+      commonErrors: [
+        { error:"Using mass ratios instead of mole ratios", fix:"Always convert to moles and use coefficients from the balanced equation."},
+        { error:"Forgetting to limit by the limiting reagent", fix:"Compute available product from each reactant; the smallest wins."},
+        { error:"Ignoring state and spectator ions", fix:"For aqueous reactions, focus on species that actually react."}
+      ],
+      retrievalBank: [
+        { q:"Why do we balance equations before calculations?", a:"To get the correct mole ratios between reactants and products."},
+        { q:"Define limiting reagent.", a:"The reactant that is used up first, limiting the amount of product formed."},
+        { q:"If 2 H2 + O2 → 2 H2O, how many moles of water from 3 mol H2 and 1 mol O2?", a:"O2 limits → 2 mol H2O."},
+        { q:"% yield definition", a:"% yield = (actual / theoretical) × 100%"}
+      ],
+      lensCascade: [
+        { lens:"Microscope", note:"Atoms combine in integer ratios—discrete events."},
+        { lens:"Equation", note:"Balanced coefficients give mole ratios."},
+        { lens:"Plant", note:"Scaling recipes for production and yield."}
+      ],
+      sandboxPrompts: [
+        "Write a cooking recipe as a balanced equation. Identify the limiting ingredient.",
+        "Design a reaction ‘score’ poster mapping coefficients to instrument sections.",
+        "Invent a real-world constraint that flips the limiting reagent."
+      ]
+    },
+    acids: {
+      title: "Acids & Bases",
+      mythicAnchors: [
+        { title:"The pH Ladder", text:"A logarithmic stairwell down to acidity—each step is ten times deeper."},
+        { title:"Indicator Oracles", text:"Pigments that whisper the solution’s secret identity."}
+      ],
+      commonErrors: [
+        { error:"Treating pH as linear", fix:"Remember: pH is log scale; a change of 1 is ×10 in [H⁺]."},
+        { error:"Mixing strong vs weak logic", fix:"Strong acids fully dissociate; weak acids require Ka/ICE tables."},
+        { error:"Forgetting significant figures in pH", fix:"Digits after decimal in pH = sig figs in [H⁺]."}
+      ],
+      retrievalBank: [
+        { q:"Define pH.", a:"pH = −log10[H⁺]"},
+        { q:"pOH from pH?", a:"pOH = 14 − pH at 25°C"},
+        { q:"0.01 M HCl pH?", a:"pH ≈ 2.00 (strong acid)"},
+        { q:"Qualitative difference strong vs weak acid", a:"Extent of dissociation; strong ~100%, weak <100% with Ka."}
+      ],
+      lensCascade: [
+        { lens:"Microscope", note:"Proton transfer events in water clusters."},
+        { lens:"Bench", note:"pH meters, indicators, titrations."},
+        { lens:"World", note:"Acid rain, oceans, physiology (blood pH)."}
+      ],
+      sandboxPrompts: [
+        "Invent a new indicator and define its color change range.",
+        "Explain log scales to a 9‑year‑old using volume knobs.",
+        "Design an infographic comparing strong vs weak acids as ‘crowd behaviour’."
+      ]
+    }
+  };
+
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const h = (tag, attrs={}, children=[]) => {
+    const el = document.createElement(tag);
+    for (const [k,v] of Object.entries(attrs||{})){
+      if (k==='class') el.className = v;
+      else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2).toLowerCase(), v);
+      else if (k==='html') el.innerHTML = v;
+      else el.setAttribute(k, v);
+    }
+    (Array.isArray(children)?children:[children]).forEach(c => { if (c!=null) el.append(c.nodeType?c:document.createTextNode(c)); });
+    return el;
+  };
+  const fmt = (x)=>{
+    const n = Number(x);
+    if (!isFinite(n)) return '—';
+    const exp = Math.abs(n)>=1e6 || (Math.abs(n)>0 && Math.abs(n)<=1e-3);
+    return exp ? n.toExponential(3) : String(Math.round(n*10000)/10000);
+  };
+  const save = (k,v)=>localStorage.setItem(k, JSON.stringify(v));
+  const load = (k, d)=>{ try{ const v = JSON.parse(localStorage.getItem(k)); return v===null?d:v; }catch{ return d; } };
+
+  let timer = { running:false, seconds: load('timer.seconds', 300) };
+  function renderTimer(){
+    const mm = String(Math.floor(timer.seconds/60)).padStart(2,'0');
+    const ss = String(timer.seconds%60).padStart(2,'0');
+    $('#mm').textContent = mm; $('#ss').textContent = ss;
+    save('timer.seconds', timer.seconds);
+  }
+  renderTimer();
+  let tId=null;
+  $('#start').onclick = ()=>{ if(tId) return; timer.running=true; tId=setInterval(()=>{ timer.seconds=Math.max(0, timer.seconds-1); renderTimer(); if(timer.seconds===0){clearInterval(tId); tId=null;} },1000); };
+  $('#pause').onclick = ()=>{ timer.running=false; clearInterval(tId); tId=null; };
+  $('#reset').onclick = ()=>{ timer.seconds=300; renderTimer(); };
+  window.addEventListener('keydown', (e)=>{
+    if (e.key==='/'){ e.preventDefault(); $('#q').focus(); }
+    if (e.key==='t'){ e.preventDefault(); $('#timer-card').scrollIntoView({behavior:'smooth'}) }
+    if (e.key==='r'){ e.preventDefault(); document.getElementById('retrieval').scrollIntoView({behavior:'smooth'}) }
+    if (e.key==='c'){ e.preventDefault(); document.getElementById('calculators').scrollIntoView({behavior:'smooth'}) }
+  });
+
+  let topic = load('topic','moles');
+  function setActiveTopicButtons(){
+    document.querySelectorAll('[data-topic]').forEach(b=>{
+      const t = b.getAttribute('data-topic');
+      if (t===topic) b.classList.add('primary'); else b.classList.remove('primary');
+    });
+  }
+  document.querySelectorAll('[data-topic]').forEach(b=>{
+    b.onclick = ()=>{ topic = b.getAttribute('data-topic'); save('topic',topic); setActiveTopicButtons(); render(); };
+  });
+  setActiveTopicButtons();
+
+  function MoleCalculator(){
+    const mass = load('mol.mass',''); const mm = load('mol.mm',''); const moles = load('mol.moles','');
+    const massInput = h('input',{type:'text', value:mass, oninput:e=>{save('mol.mass', e.target.value)}});
+    const mmInput   = h('input',{type:'text', value:mm, oninput:e=>{save('mol.mm', e.target.value)}});
+    const nInput    = h('input',{type:'text', value:moles, oninput:e=>{save('mol.moles', e.target.value)}});
+
+    const nCalc = ()=>{
+      const m=parseFloat(massInput.value), M=parseFloat(mmInput.value);
+      return (isFinite(m) && isFinite(M) && M!==0)? fmt(m/M):'—';
+    };
+    const mCalc = ()=>{
+      const n=parseFloat(nInput.value), M=parseFloat(mmInput.value);
+      return (isFinite(n) && isFinite(M))? fmt(n*M):'—';
+    };
+
+    return sectionCard('Mole Calculator', [
+      row([ col('Mass (g)', massInput),
+            col('Molar Mass, M (g/mol)', mmInput),
+            col('Moles, n', nInput) ]),
+      row([ btn('n = m / M', ()=>{ const m=parseFloat(massInput.value), M=parseFloat(mmInput.value); if(isFinite(m)&&isFinite(M)&&M!==0){ nInput.value = m/M; save('mol.moles', nInput.value);} }, 'primary'),
+            btn('m = n × M', ()=>{ const n=parseFloat(nInput.value), M=parseFloat(mmInput.value); if(isFinite(n)&&isFinite(M)){ massInput.value = n*M; save('mol.mass', massInput.value);} }),
+            btn('Reset', ()=>{ massInput.value=''; mmInput.value=''; nInput.value=''; save('mol.mass',''); save('mol.mm',''); save('mol.moles',''); }, 'ghost') ]),
+      h('p',{class:'hint'},[`Result: `,pill(`n = ${nCalc()}`),' ',pill(`m = ${mCalc()} g`)])
+    ]);
+  }
+
+  function AvogadroConverter(){
+    const input = h('input',{type:'text', value:load('avog.moles',''), oninput:e=>save('avog.moles',e.target.value)});
+    const out = h('span',{},fmt((parseFloat(input.value)||0)*6.022e23));
+    input.addEventListener('input', ()=>{ out.textContent = fmt((parseFloat(input.value)||0)*6.022e23); });
+    return sectionCard('Avogadro Converter', [
+      row([ col('Moles', input), h('div',{},[h('div',{class:'hint'},'Entities ≈ '), pill(out)]) ])
+    ]);
+  }
+
+  function StoichCalculator(){
+    const a=h('input',{type:'text', value:load('st.a','2'), oninput:e=>save('st.a',e.target.value)});
+    const b=h('input',{type:'text', value:load('st.b','1'), oninput:e=>save('st.b',e.target.value)});
+    const na=h('input',{type:'text', value:load('st.na','3'), oninput:e=>save('st.na',e.target.value)});
+    const out=h('span');
+    const recalc=()=>{
+      const A=parseFloat(a.value)||0, B=parseFloat(b.value)||1, NA=parseFloat(na.value)||0;
+      out.textContent = fmt(NA*B/A);
+    };
+    [a,b,na].forEach(x=>x.addEventListener('input',recalc)); recalc();
+    return sectionCard('Stoichiometry (A→B)', [
+      row([ col('Coeff A',a), col('Coeff B',b), col('n(A) given (mol)',na), h('div',{},[h('div',{class:'hint'},'n(B) needed ≈'), pill(out), h('div',{class:'hint'},'n(B) = n(A) × b/a')]) ])
+    ]);
+  }
+
+  function LimitingReagentTool(){
+    const a=h('input',{type:'text', value:load('lr.a','1'), oninput:e=>save('lr.a',e.target.value)});
+    const b=h('input',{type:'text', value:load('lr.b','1'), oninput:e=>save('lr.b',e.target.value)});
+    const na=h('input',{type:'text', value:load('lr.na','1'), oninput:e=>save('lr.na',e.target.value)});
+    const nb=h('input',{type:'text', value:load('lr.nb','1'), oninput:e=>save('lr.nb',e.target.value)});
+    const out=h('span');
+    const recalc=()=>{
+      const reqA=(parseFloat(na.value)||0)/(parseFloat(a.value)||1);
+      const reqB=(parseFloat(nb.value)||0)/(parseFloat(b.value)||1);
+      out.textContent = reqA===reqB ? 'Neither (stoichiometric)' : (reqA<reqB?'A limits':'B limits');
+    };
+    [a,b,na,nb].forEach(x=>x.addEventListener('input',recalc)); recalc();
+    return sectionCard('Limiting Reagent', [
+      row([ col('Coeff A',a), col('Coeff B',b), col('n(A) available',na), col('n(B) available',nb), h('div',{},[h('div',{class:'hint'},'Result'), pill(out)]) ])
+    ]);
+  }
+
+  function AcidBaseCalculator(){
+    const mode = load('ab.mode','strongAcid');
+    const C = load('ab.C','0.01'); const Ka = load('ab.Ka','1.8e-5');
+    const btnSA = btn('Strong Acid',()=>setMode('strongAcid'));
+    const btnSB = btn('Strong Base',()=>setMode('strongBase'));
+    const btnWA = btn('Weak Acid (Ka)',()=>setMode('weakAcid'));
+    function setMode(m){ save('ab.mode', m); renderMain(); }
+    function pH(){
+      const c=parseFloat(load('ab.C','0.01'))||0;
+      const m=load('ab.mode','strongAcid');
+      if (m==='strongAcid') return -Math.log10(c||1e-99);
+      if (m==='strongBase') return 14 + Math.log10(c||1e-99);
+      const ka=parseFloat(load('ab.Ka','1.8e-5'))||0; const h=Math.sqrt(Math.max(0, ka*c)); return -Math.log10(h||1e-99);
+    }
+    const conc = h('input',{type:'text', value:C, oninput:e=>{save('ab.C',e.target.value); renderMain();}});
+    const kaEl = h('input',{type:'text', value:Ka, oninput:e=>{save('ab.Ka',e.target.value); renderMain();}});
+    const result = h('span',{},fmt(pH()));
+    const header = row([btnSA, btnSB, btnWA]);
+    const fields = row([ col('Concentration (M)', conc), h('div',{id:'ka-slot'}) ]);
+    const note = h('div',{class:'hint'},'Estimated pH (classroom approximation)');
+    const res = h('div',{}, [h('div',{class:'hint'},'Estimated pH ≈ '), pill(result)]);
+    const card = sectionCard('Acid–Base pH', [header, fields, res, note]);
+    function refresh(){
+      result.textContent = fmt(pH());
+      if (load('ab.mode','strongAcid')==='weakAcid'){
+        $('#ka-slot', card).replaceChildren(col('Ka', kaEl));
+      } else {
+        $('#ka-slot', card).replaceChildren();
+      }
+      [btnSA,btnSB,btnWA].forEach(b=>b.classList.remove('primary'));
+      ({strongAcid:btnSA,strongBase:btnSB,weakAcid:btnWA})[load('ab.mode','strongAcid')].classList.add('primary');
+    }
+    refresh();
+    return card;
+  }
+
+  function IndicatorGuide(){
+    const rows=[
+      {name:'Universal', range:'pH 4–10', note:'Rainbow spectrum; demo-friendly'},
+      {name:'Litmus', range:'~pH 5–8', note:'Red in acid, blue in base'},
+      {name:'Phenolphthalein', range:'pH 8.3–10', note:'Colourless → pink (base)'},
+      {name:'Methyl orange', range:'pH 3.1–4.4', note:'Red → yellow (base)'}
+    ];
+    const table = h('table',{},[
+      h('thead',{},h('tr',{},[h('th',{},'Indicator'),h('th',{},'Range'),h('th',{},'Notes')])),
+      h('tbody',{},rows.map(r=>h('tr',{},[h('td',{},r.name),h('td',{},r.range),h('td',{},r.note)])))
+    ]);
+    return sectionCard('Indicator Guide',[table]);
+  }
+
+  function RetrievalGenerator(pack){
+    const difficulty = load(pack.title+'.difficulty',2);
+    const slider = h('input',{type:'range', min:1, max:5, step:1, value:difficulty, oninput:e=>{save(pack.title+'.difficulty',e.target.value)}});
+    const drawBtn = btn('Draw', ()=>draw(), 'primary');
+    const deck = h('div');
+    function draw(){
+      const k = Math.max(1, parseInt(load(pack.title+'.difficulty',2)));
+      const shuffled = [...pack.retrievalBank].sort(()=>Math.random()-0.5);
+      const qs = shuffled.slice(0,k);
+      deck.replaceChildren(...qs.map((item,i)=>{
+        const details = h('details',{},[h('summary',{},'Reveal answer'), h('div',{},item.a)]);
+        const card = h('div',{class:'card'},[h('h3',{},`Q${i+1}. ${item.q}`), h('div',{class:'content'},[details])]);
+        card.style.borderStyle = 'dashed';
+        return card;
+      }));
+    }
+    const wrapper = sectionCard('Retrieval Practice',[ row([h('div',{},[h('div',{class:'hint'},'Friction dial'), slider]), drawBtn]), deck ]);
+    wrapper.id = 'retrieval';
+    return wrapper;
+  }
+
+  function MythCards(pack){
+    return sectionCard('Mythic Anchors', [
+      h('div',{class:'two'}, pack.mythicAnchors.map(a=>{
+        const inner = h('div',{class:'card'},[h('h3',{},a.title), h('div',{class:'content'},a.text)]);
+        return inner;
+      }))
+    ]);
+  }
+
+  function ErrorWell(pack){
+    return sectionCard('Error Gravity Well', pack.commonErrors.map((e,i)=>{
+      const colour = i===0? 'var(--danger)' : (i===1? 'var(--accent)' : 'var(--good)');
+      const box = h('div',{class:'card', style:`border-left:6px solid ${colour}`},[
+        h('h3',{},`Common error #${i+1}: ${e.error}`),
+        h('div',{class:'content'},`Correction: ${e.fix}`)
+      ]);
+      return box;
+    }));
+  }
+
+  function LensCascade(pack){
+    const grid = h('div',{class:'two'}, pack.lensCascade.map(c=>{
+      const box = h('div',{class:'card'},[
+        h('h3',{},c.lens),
+        h('div',{class:'content'},c.note)
+      ]);
+      return box;
+    }));
+    return sectionCard('Lens Cascade',[grid]);
+  }
+
+  function Sandbox(pack){
+    const prompts = pack.sandboxPrompts;
+    let ix = load(pack.title+'.sandbox',0)%prompts.length;
+    const text = h('div',{},prompts[ix]);
+    const next = btn('New prompt',()=>{ ix=(ix+1)%prompts.length; save(pack.title+'.sandbox',ix); text.textContent = prompts[ix]; }, 'primary');
+    return sectionCard('Mental Sandbox',[ h('div',{},'Prompt:'), h('div',{style:'font-weight:800; margin:6px 0'}, text), next ]);
+  }
+
+  function sectionCard(title, children){
+    const t = h('div',{class:'card'},[ h('h3',{class:'title-accent'},title), h('div',{class:'content'}, children ) ]);
+    return t;
+  }
+  const pill = (text)=> h('span',{class:'pill'}, text);
+  const btn = (label, on, type)=> h('button',{class:'btn'+(type?' '+type:''), onClick:on}, label);
+  const col = (labelText, control)=> h('div',{},[h('label',{},labelText), control]);
+  const row = (children)=> h('div',{class:'row'},children);
+
+  function renderMain(){
+    const pack = TOPIC_PACKS[topic];
+    const main = document.getElementById('main');
+    main.replaceChildren();
+    const calculators = h('div',{id:'calculators', class:'two'});
+    if (topic==='moles'){ calculators.append(MoleCalculator(), AvogadroConverter()); }
+    if (topic==='stoich'){ calculators.append(StoichCalculator(), LimitingReagentTool()); }
+    if (topic==='acids'){ calculators.append(AcidBaseCalculator(), IndicatorGuide()); }
+    main.append(calculators);
+    main.append(LensCascade(pack));
+    const row2 = h('div',{class:'two'});
+    row2.append(RetrievalGenerator(pack), MythCards(pack));
+    main.append(row2);
+    main.append(ErrorWell(pack));
+    main.append(Sandbox(pack));
+  }
+  function render(){ renderMain(); }
+  render();
+  const q = document.getElementById('q');
+  q.addEventListener('keydown', (e)=> e.stopPropagation() );
+</script>
+</body>
+</html>
