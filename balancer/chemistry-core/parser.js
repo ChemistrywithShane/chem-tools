@@ -2,7 +2,7 @@
 // Returns an element-count map; charge (if present) is stored under the key "(charge)".
 export function parseFormula(str){
   let s = str.replace(/\s+/g,'').replace('→','->');
-  const parts = s.split(/·|\*/g);           // support middle dot or '*' for hydrates
+  const parts = s.split(/[·*.]/g);   // accept middle dot, asterisk, or period
   const counts = {};
   for(const partRaw of parts){
     if(!partRaw) continue;
