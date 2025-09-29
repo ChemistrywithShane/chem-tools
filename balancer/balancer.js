@@ -93,13 +93,23 @@ function renderTallies(reactants, products, coeffs, includeCharge){
     wrap.appendChild(line);
   });
   // Reset: clear all inputs, tallies, and result
+// Reset everything but keep extra boxes (nicer during demos)
 $('#reset').onclick = () => {
   $$('#reactants .species, #products .species').forEach(i => i.value = '');
   $('#tallies').innerHTML = '';
   $('#result').textContent = '—';
   $('#status').textContent = '—';
   $('#chargeToggle').checked = false;
-  // keep the extra boxes the user added – feels nicer during demos
+};
+
+// Clear per section
+$('#clear-reactants').onclick = () => {
+  $$('#reactants .species').forEach(i => i.value = '');
+  $('#tallies').innerHTML = ''; $('#result').textContent = '—'; $('#status').textContent = '—';
+};
+$('#clear-products').onclick = () => {
+  $$('#products .species').forEach(i => i.value = '');
+  $('#tallies').innerHTML = ''; $('#result').textContent = '—'; $('#status').textContent = '—';
 };
 
 }
