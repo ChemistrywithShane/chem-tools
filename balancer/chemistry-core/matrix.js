@@ -14,7 +14,7 @@ export function div(x,y){ return norm({n:x.n*y.d, d:x.d*y.n}); }
 
 export function nullspaceVector(A){
   const rows = A.length, cols = A[0].length;
-  if (rows === 0) return Array(cols).fill(1); // safety: degenerate input
+  if (rows === 0) return Array(cols).fill(1);
   const M = A.map(r => r.map(v => norm(toRational(v))));
   let r=0;
   for(let c=0;c<cols && r<rows;c++){
@@ -27,7 +27,7 @@ export function nullspaceVector(A){
       if(i===r) continue;
       const factor = M[i][c];
       if(factor.n!==0n){
-        for(let j=c;j<cols;j++) M[i][j] = sub(M[i][j], mul(factor, M[r][j]));
+        for(let j=c;j<cols;j++) M[i][j] = sub(M[i][j], mul(M[r][j], factor));
       }
     }
     r++;
@@ -39,7 +39,7 @@ export function nullspaceVector(A){
   }
   let free = -1;
   for(let c=cols-1;c>=0;c--) if(!pivot[c]) { free=c; break; }
-  if(free===-1) free = cols-1; // fully determined -> choose last
+  if(free===-1) free = cols-1;
 
   const sol = Array(cols).fill(null).map(()=>toRational(0));
   sol[free] = toRational(1);
@@ -53,16 +53,12 @@ export function nullspaceVector(A){
     sol[j] = norm({n:-s.n, d:s.d});
   }
 
-  // scale → smallest positive integers
   let L = 1; for(const v of sol){ L = lcm(L, Math.max(1, Number(v.d))); }
   let ints = sol.map(v => Number(v.n) * (L/Math.max(1, Number(v.d))));
   let g = 0; for(const x of ints) g = gcd(g, Math.abs(x));
   g = g || 1; ints = ints.map(x => x / g);
 
-  // HARDEN: avoid the all-zero trap; ensure positivity
-  if (ints.every(x => x === 0)) {
-    ints = Array(cols).fill(0); ints[free] = 1;
-  }
+  if (ints.every(x => x === 0)) { ints = Array(cols).fill(0); ints[free] = 1; }
   if (ints.every(x => x <= 0)) ints = ints.map(x => -x);
   return ints;
 }
