@@ -1,87 +1,118 @@
-// Parses chemical formulas incl. parentheses, hydrates (· or *), and charges (^2-, ^+, etc.).
-// Returns an element-count map; charge (if present) is stored under the key "(charge)".
-export function parseFormula(str){
-  let s = str.replace(/\s+/g,'').replace('→','->');
-  const parts = s.split(/[·*\.]/g);
-  const mHyd = partRaw.match(/^([0-9]+)H2O$/i);
-if (mHyd) {
-  const n = parseInt(mHyd[1], 10);
-  counts['H'] = (counts['H'] || 0) + 2 * n;
-  counts['O'] = (counts['O'] || 0) + 1 * n;
-  continue;
-}
-  const counts = {};
-  for(const partRaw of parts){
-   if(!partRaw) continue;
-   if (/^[0-9]+H2O$/i.test(partRaw)) {
-    const n = parseInt(partRaw.match(/^[0-9]+/)[0], 10);
-    counts['H'] = (counts['H'] || 0) + 2 * n;
-    counts['O'] = (counts['O'] || 0) + 1 * n;
-    continue;
+// Parses chemical formulas incl. parentheses, hydrates (·, ., or *), and charges (^2-, ^+, etc).
+// Returns an element count map; charge (if present) is stored under the key "charge".
+export function parseFormula(str) {
+  if (!str) return {};
+
+  // 1) Normalise: remove whitespace; turn hydrate separators into '*'
+  //    Accept: middle dot `·`, explicit `*`, and a dot just before H2O like "CuSO4.5H2O"
+  let s = String(str).trim().replace(/\s+/g, '');
+  s = s.replace(/·/g, '*');
+  s = s.replace(/\.(?=(\d+)?H2O\b)/gi, '*'); // e.g. CuSO4.5H2O -> CuSO4*5H2O
+
+  // 2) Extract an overall ionic charge at the end (optional):
+  //    Supported tails: ^2-, ^-, ^3+, ^+
+  //    If absent, charge = 0
+  let charge = 0;
+  const chargeMatch = s.match(/\^([0-9]*)\s*([+-])$/);
+  if (chargeMatch) {
+    const mag = chargeMatch[1] ? parseInt(chargeMatch[1], 10) : 1;
+    const sign = (chargeMatch[2] === '-') ? -1 : +1;
+    charge = sign * mag;
+    s = s.slice(0, chargeMatch.index); // strip the charge tail from the formula
   }
 
-  }
-    const mCharge = partRaw.match(/\^(?:([0-9]+)?([+-]))$/);
-    let core = partRaw;
-    if(mCharge){
-      core = partRaw.slice(0, mCharge.index);
-      const mag = mCharge[1] ? parseInt(mCharge[1],10) : 1;
-      const sign = mCharge[2] === '+' ? -1 : +1; // electrons negative
-      counts['(charge)'] = (counts['(charge)']||0) + sign*mag;
+  // 3) Split on '*' which (after normalisation) means "hydrate part"
+  //    e.g. "CuSO4*5H2O" => ["CuSO4", "5H2O"]
+  const parts = s.split('*').filter(Boolean);
+
+  // 4) Accumulate counts across all parts (core + hydrates)
+  const total = {};
+  for (const raw of parts) {
+    // Hydrate shorthand: "nH2O" where n is integer
+    const hyd = raw.match(/^([0-9]+)H2O$/i);
+    if (hyd) {
+      const n = parseInt(hyd[1], 10);
+      add(total, { H: 2 * n, O: 1 * n });
+      continue;
     }
-    const local = parseCore(core);
-    for(const k in local){ counts[k] = (counts[k]||0) + local[k]; }
+
+    // Otherwise parse a regular core fragment with parentheses, multipliers etc.
+    const coreCounts = parseCore(raw);
+    add(total, coreCounts);
   }
-  return counts;
+
+  if (charge !== 0) total['charge'] = (total['charge'] || 0) + charge;
+  return total;
 }
 
-function parseCore(f){
-  let i=0;
-  function readNum(){ let n=''; while(i<f.length && /[0-9]/.test(f[i])) n+=f[i++]; return n?parseInt(n,10):1; }
-  function merge(dst,src,m=1){ for(const k in src){ dst[k]=(dst[k]||0)+src[k]*m; } }
-  function parseGroup(){
-    const out={};
-    while(i<f.length){
-      const ch=f[i];
-      if(ch==='('){
-        i++; const inner=parseGroup();
-        if(f[i]!==')') throw new Error('Missing )');
-        i++; const mult=readNum(); merge(out,inner,mult); continue;
-      }
-      if(ch===')'){ break; }
-      if(/[0-9]/.test(ch)){
-        const mult=readNum();
-        if(f[i]==='('){
-          i++; const inner=parseGroup(); if(f[i]!==')') throw new Error('Missing )'); i++; merge(out,inner,mult);
-        }else{
-          const el=readElement(); const sub=readNum(); out[el]=(out[el]||0)+sub*mult;
+// ---- parser for a single fragment (no '*' left), handling parentheses and multipliers ----
+function parseCore(formula) {
+  let i = 0;
+  const len = formula.length;
+
+  function readNumber() {
+    let num = '';
+    while (i < len && /[0-9]/.test(formula[i])) { num += formula[i++]; }
+    return num ? parseInt(num, 10) : 1;
+  }
+
+  function readElement() {
+    if (i >= len || !/[A-Z]/.test(formula[i])) return null;
+    let sym = formula[i++]; // uppercase
+    if (i < len && /[a-z]/.test(formula[i])) sym += formula[i++]; // optional lowercase
+    return sym;
+  }
+
+  function parseGroup() {
+    const out = {};
+    while (i < len) {
+      const ch = formula[i];
+
+      if (ch === '(') {
+        i++; // skip '('
+        const inner = parseGroup(); // parse recursively
+        if (i >= len || formula[i] !== ')') {
+          throw new Error('Unmatched "(" in ' + formula);
         }
+        i++; // skip ')'
+        const mult = readNumber();
+        scaleAndAdd(out, inner, mult);
         continue;
       }
-      if(/[A-Z]/.test(ch)){
-        const el=readElement(); const sub=readNum(); out[el]=(out[el]||0)+sub; continue;
+
+      if (ch === ')') {
+        // group end - handled by caller
+        break;
       }
-      break;
+
+      // Element symbol
+      const el = readElement();
+      if (el) {
+        const n = readNumber();
+        out[el] = (out[el] || 0) + n;
+        continue;
+      }
+
+      // Anything else means we've reached an unexpected character
+      // Common benign case: we already stripped charge; so throw if encountered.
+      throw new Error('Unexpected character "' + ch + '" in ' + formula + ' at ' + i);
     }
     return out;
   }
-  function readElement(){ if(!/[A-Z]/.test(f[i])) throw new Error('Expected element at '+i); let el=f[i++]; if(i<f.length && /[a-z]/.test(f[i])) el+=f[i++]; return el; }
+
   return parseGroup();
 }
 
-// Build stoichiometry matrix from reactant/product lists
-export function buildMatrixFromReaction(reactants, products, includeCharge=false){
-  const species=[...reactants, ...products];
-  const parsed=species.map(parseFormula);
-  const set=new Set();
-  parsed.forEach(m => Object.keys(m).forEach(k => { if(k!=='(charge)' || includeCharge) set.add(k); }));
-  const rows=Array.from(set);
-  const A = rows.map(()=>Array(species.length).fill(0));
-  rows.forEach((el, r) => {
-    species.forEach((sp, c) => {
-      const v = parsed[c][el] || 0;
-      A[r][c] = c < reactants.length ? v : -v;
-    });
-  });
-  return {A, rows, species};
+// ---- helpers ----
+function scaleAndAdd(target, src, k) {
+  for (const key in src) {
+    target[key] = (target[key] || 0) + k * src[key];
+  }
 }
+
+function add(target, src) {
+  for (const key in src) {
+    target[key] = (target[key] || 0) + src[key];
+  }
+}
+
