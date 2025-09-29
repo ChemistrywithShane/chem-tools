@@ -1,1 +1,55 @@
-// placeholder for index.html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chemistry with Shane — Box Balancer (Foundations MVP)</title>
+  <link rel="stylesheet" href="./balancer.css">
+</head>
+<body>
+<header class="header">
+  <h1>⚗️ Chemistry with Shane — Box Balancer</h1>
+  <nav><a href="../">Home</a></nav>
+</header>
+
+<main class="container">
+  <section class="panel">
+    <h2>Reactants</h2>
+    <div id="reactants" class="grid">
+      <div class="box"><input class="species" placeholder="e.g. C3H8" list="speciesList"></div>
+      <div class="box"><input class="species" placeholder="e.g. O2" list="speciesList"></div>
+      <div class="box optional"><input class="species" placeholder="(optional)" list="speciesList"></div>
+      <button id="add-reactant" class="ghost">＋ Add reactant</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Products</h2>
+    <div id="products" class="grid">
+      <div class="box"><input class="species" placeholder="e.g. CO2" list="speciesList"></div>
+      <div class="box"><input class="species" placeholder="e.g. H2O" list="speciesList"></div>
+      <div class="box optional"><input class="species" placeholder="(optional)" list="speciesList"></div>
+      <button id="add-product" class="ghost">＋ Add product</button>
+    </div>
+  </section>
+
+  <section class="panel actions">
+    <label class="toggle"><input type="checkbox" id="chargeToggle"> Enforce charge balance (ionic)</label>
+    <button id="balance" class="primary">Balance</button>
+    <span id="status" class="status">—</span>
+  </section>
+
+  <section class="panel">
+    <h2>Result</h2>
+    <div id="result" class="result mono">—</div>
+    <div id="tallies" class="tallies"></div>
+  </section>
+
+  <datalist id="speciesList"></datalist>
+</main>
+
+<footer class="foot">Foundations MVP • parser & solver are modular and tested • Hydrates (·) and charges (^2-, ^+) supported.</footer>
+
+<script type="module" src="./balancer.js"></script>
+</body>
+</html>
