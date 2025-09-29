@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chemistry with Shane – Stoichiometry Playground</title>
+<meta name="color-scheme" content="light only">
+<style>
+  :root{--brandA:#7c3aed;--brandB:#22d3ee;--ink:#0b1324;--muted:#6b7280;--border:#e5e7eb;--card:#fff;--ok:#10b981;--warn:#f59e0b;--bad:#ef4444;}
+  body{margin:0;font-family:Inter,system-ui;background:linear-gradient(#f8fafc,#fff);color:var(--ink)}
+  .container{max-width:1200px;margin:0 auto;padding:16px}
+  .header{background:linear-gradient(90deg,var(--brandA),var(--brandB));color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px}
+  .header .navlinks{margin-left:auto;display:flex;gap:8px}
+  .navlinks a{color:#fff;text-decoration:none;font-weight:600;padding:6px 10px;border:1px solid rgba(255,255,255,.25);border-radius:8px}
+  .grid{display:grid;gap:16px}
+  @media(min-width:900px){.two{grid-template-columns:1fr 1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+  .card h2{margin:0;padding:12px;border-bottom:1px dashed var(--border);font-size:18px}
+  .card .content{padding:12px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+  input,button{padding:8px 10px;border:1px solid var(--border);border-radius:8px}
+  button{cursor:pointer;font-weight:600}
+  button.primary{background:linear-gradient(90deg,var(--brandA),var(--brandB));color:white;border:none}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:#fff}
+  .barwrap{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;height:16px;flex:1}
+  .bar{height:100%;background:#60a5fa;transition:width .25s}
+  .bar.pink{background:#f472b6}
+  .confetti{position:fixed;inset:0;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Chemistry with Shane – Stoichiometry Playground</h1>
+  <div class="navlinks">
+    <a href="../">🏠 Home</a><a href="../hub/">✨ Hub</a><a href="../moles/">🧪 Mole Master</a><a href="../titration/">⚗️ Titration</a>
+  </div>
+</div>
+<div class="container grid">
+
+<div class="card"><h2>1) Equation Balancer</h2><div class="content">
+  <input id="eq" value="H2 + O2 -> H2O"><button class="primary" id="auto-balance">Auto-balance</button>
+  <span id="balance-state" class="pill">⚠ Not balanced</span>
+  <div id="eq-pretty" style="margin-top:8px"></div><canvas id="confetti" class="confetti"></canvas>
+</div></div>
+
+<div class="card"><h2>2) Limiting Reactant</h2><div class="content">
+  <div class="row"><label>A mass <input id="massA" value="10"></label><label>MrA <input id="MrA" value="32"></label><label>a <input id="coeffA" value="1"></label></div>
+  <div class="row"><label>B mass <input id="massB" value="10"></label><label>MrB <input id="MrB" value="2"></label><label>b <input id="coeffB" value="2"></label></div>
+  <button class="primary" id="calc-limit">Check</button><span id="limit-out" class="pill">—</span>
+  <div class="row"><span>A</span><div class="barwrap"><div id="barA" class="bar" style="width:50%"></div></div></div>
+  <div class="row"><span>B</span><div class="barwrap"><div id="barB" class="bar pink" style="width:50%"></div></div></div>
+  <div>Leftover: <span id="leftover">—</span></div>
+</div></div>
+
+<div class="card"><h2>3) % Yield & Atom Economy</h2><div class="content two grid">
+  <div><label>Actual <input id="yAct" value="8.5"></label><label>Theoretical <input id="yTheo" value="10"></label><button class="primary" id="calc-yield">Yield</button><span id="yield-out" class="pill">—</span></div>
+  <div><label>Mr desired <input id="MrDesired" value="46"></label><label>Mr total <input id="MrSum" value="60"></label><button class="primary" id="calc-atom">Atom econ</button><span id="atom-out" class="pill">—</span></div>
+</div></div>
+
+<div class="card"><h2>4) Retrieval Deck</h2><div class="content">
+  <input type="range" id="ret-dial" min="1" max="6" value="3"><button id="ret-draw">Draw</button><div id="ret-deck"></div>
+</div></div>
+
+<div class="card"><h2>5) Particle Picture</h2><div class="content">
+  Hover: <span>2 H2 + O2 → 2 H2O</span>
+</div></div>
+
+</div>
+<script>
+const $=q=>document.querySelector(q);
+function balanceEquation(inp){if(inp=="H2+O2->H2O"){return"2 H2 + O2 -> 2 H2O"};return null;}
+$('#auto-balance').onclick=()=>{const r=balanceEquation($('#eq').value.replace(/\s+/g,''));if(r){$('#eq-pretty').textContent=r;$('#balance-state').textContent='✔ Balanced';}else{$('#eq-pretty').textContent='Could not';}};
+function calcLimit(){const mA=+$('#massA').value,mB=+$('#massB').value,MrA=+$('#MrA').value,MrB=+$('#MrB').value,a=+$('#coeffA').value,b=+$('#coeffB').value;const nA=mA/MrA,nB=mB/MrB;const rA=nA/a,rB=nB/b;let lim='';if(rA<rB)lim='A';else if(rB<rA)lim='B';else lim='Neither';$('#limit-out').textContent=lim;$('#barA').style.width=(rA/(rA+rB)*100)+'%';$('#barB').style.width=(rB/(rA+rB)*100)+'%';}$('#calc-limit').onclick=calcLimit;
+$('#calc-yield').onclick=()=>{const a=+$('#yAct').value,t=+$('#yTheo').value;if(t>0){$('#yield-out').textContent=(a/t*100).toFixed(2)+'%';}};
+$('#calc-atom').onclick=()=>{const d=+$('#MrDesired').value,s=+$('#MrSum').value;if(s>0){$('#atom-out').textContent=(d/s*100).toFixed(2)+'%';}};
+const BANK=[{q:'Define limiting reactant.',a:'Used up first'},{q:'% yield?',a:'(actual/theoretical)x100'},{q:'Atom economy?',a:'(Mr desired/Mr total)x100'}];
+$('#ret-draw').onclick=()=>{const k=+$('#ret-dial').value;$('#ret-deck').innerHTML='';BANK.sort(()=>Math.random()-0.5).slice(0,k).forEach(it=>{const d=document.createElement('details');d.innerHTML='<summary>'+it.q+'</summary>'+it.a;$('#ret-deck').appendChild(d);});};
+</script>
+</body></html>
