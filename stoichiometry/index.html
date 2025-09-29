@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -25,6 +26,7 @@
   .bar{height:100%;background:#60a5fa;transition:width .25s}
   .bar.pink{background:#f472b6}
   .confetti{position:fixed;inset:0;pointer-events:none}
+  .mono{font:700 16px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas}
 </style>
 </head>
 <body>
@@ -37,9 +39,15 @@
 <div class="container grid">
 
 <div class="card"><h2>1) Equation Balancer</h2><div class="content">
-  <input id="eq" value="H2 + O2 -> H2O"><button class="primary" id="auto-balance">Auto-balance</button>
-  <span id="balance-state" class="pill">⚠ Not balanced</span>
-  <div id="eq-pretty" style="margin-top:8px"></div><canvas id="confetti" class="confetti"></canvas>
+  <div class="row">
+    <input id="eq" class="mono" value="C3H8 + O2 -> CO2 + H2O" style="flex:1">
+    <button class="primary" id="auto-balance">Auto-balance</button>
+    <button id="reset-eq">Reset</button>
+    <span id="balance-state" class="pill">⚠ Not balanced</span>
+  </div>
+  <div id="eq-pretty" class="mono" style="margin-top:8px">—</div>
+  <div class="hint">Try: Fe + O2 -> Fe2O3 • KMnO4 -> K2MnO4 + MnO2 + O2 • Al + HCl -> AlCl3 + H2</div>
+  <canvas id="confetti" class="confetti"></canvas>
 </div></div>
 
 <div class="card"><h2>2) Limiting Reactant</h2><div class="content">
@@ -61,18 +69,208 @@
 </div></div>
 
 <div class="card"><h2>5) Particle Picture</h2><div class="content">
-  Hover: <span>2 H2 + O2 → 2 H2O</span>
+  Hover: <span class="mono">2 H2 + O2 → 2 H2O</span>
 </div></div>
 
 </div>
 <script>
 const $=q=>document.querySelector(q);
-function balanceEquation(inp){if(inp=="H2+O2->H2O"){return"2 H2 + O2 -> 2 H2O"};return null;}
-$('#auto-balance').onclick=()=>{const r=balanceEquation($('#eq').value.replace(/\s+/g,''));if(r){$('#eq-pretty').textContent=r;$('#balance-state').textContent='✔ Balanced';}else{$('#eq-pretty').textContent='Could not';}};
-function calcLimit(){const mA=+$('#massA').value,mB=+$('#massB').value,MrA=+$('#MrA').value,MrB=+$('#MrB').value,a=+$('#coeffA').value,b=+$('#coeffB').value;const nA=mA/MrA,nB=mB/MrB;const rA=nA/a,rB=nB/b;let lim='';if(rA<rB)lim='A';else if(rB<rA)lim='B';else lim='Neither';$('#limit-out').textContent=lim;$('#barA').style.width=(rA/(rA+rB)*100)+'%';$('#barB').style.width=(rB/(rA+rB)*100)+'%';}$('#calc-limit').onclick=calcLimit;
-$('#calc-yield').onclick=()=>{const a=+$('#yAct').value,t=+$('#yTheo').value;if(t>0){$('#yield-out').textContent=(a/t*100).toFixed(2)+'%';}};
-$('#calc-atom').onclick=()=>{const d=+$('#MrDesired').value,s=+$('#MrSum').value;if(s>0){$('#atom-out').textContent=(d/s*100).toFixed(2)+'%';}};
-const BANK=[{q:'Define limiting reactant.',a:'Used up first'},{q:'% yield?',a:'(actual/theoretical)x100'},{q:'Atom economy?',a:'(Mr desired/Mr total)x100'}];
-$('#ret-draw').onclick=()=>{const k=+$('#ret-dial').value;$('#ret-deck').innerHTML='';BANK.sort(()=>Math.random()-0.5).slice(0,k).forEach(it=>{const d=document.createElement('details');d.innerHTML='<summary>'+it.q+'</summary>'+it.a;$('#ret-deck').appendChild(d);});};
+
+/* ===== Robust equation balancer =====
+   - Parses elements with parentheses (e.g., Fe2(SO4)3)
+   - Builds element matrix and finds nullspace vector
+   - Converts to smallest positive integers
+*/
+function parseFormula(f){
+  // Tokenizer for elements, numbers, parentheses
+  let i=0;
+  function parseGroup(){
+    let counts={};
+    while(i<f.length){
+      const ch=f[i];
+      if(ch==='('){
+        i++; const inner=parseGroup();
+        if(f[i]!==')') throw new Error('Missing )');
+        i++;
+        let num=''; while(i<f.length && /\d/.test(f[i])) num+=f[i++];
+        const mult = num? parseInt(num,10):1;
+        for(const el in inner){ counts[el]=(counts[el]||0)+inner[el]*mult; }
+        continue;
+      }
+      if(ch===')' || ch==='+' || ch==='→' || ch==='-' || ch==='>'){
+        break;
+      }
+      const m = f.slice(i).match(/^[A-Z][a-z]?/);
+      if(!m) break;
+      const el = m[0]; i+=el.length;
+      let num=''; while(i<f.length && /\d/.test(f[i])) num+=f[i++];
+      counts[el]=(counts[el]||0)+(num?parseInt(num,10):1);
+    }
+    return counts;
+  }
+  return parseGroup();
+}
+
+function splitSides(eq){
+  const arrow = eq.includes('->')? '->' : (eq.includes('=>')? '=>' : '→');
+  const [L,R] = eq.split(arrow);
+  const left = L.split('+').map(s=>s.trim()).filter(Boolean);
+  const right= R.split('+').map(s=>s.trim()).filter(Boolean);
+  return {left,right,arrow};
+}
+
+function buildMatrix(left,right){
+  const species = [...left, ...right];
+  const parsed = species.map(x=>parseFormula(x));
+  const elemsSet = new Set();
+  parsed.forEach(o=>Object.keys(o).forEach(k=>elemsSet.add(k)));
+  const elems = Array.from(elemsSet);
+  const rows = elems.length, cols = species.length;
+  const A = Array.from({length:rows},()=>Array(cols).fill(0));
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const count = parsed[c][elems[r]] || 0;
+      A[r][c] = (c<left.length? count : -count);
+    }
+  }
+  return {A, elems, species, leftCount:left.length};
+}
+
+function rationalGaussJordan(A){
+  // Convert to RREF over rationals
+  const rows=A.length, cols=A[0].length;
+  // Represent numbers as {n,d} rational (n integer, d>0)
+  const make=(n,d=1)=>({n:BigInt(n), d:BigInt(d)});
+  const gcd=(a,b)=> b===0n? a: gcd(b, a%b);
+  const norm=(x)=>{ if(x.d<0n){ x.n=-x.n; x.d=-x.d; } const g=gcd(x.n<0n?-x.n:x.n, x.d); x.n/=g; x.d/=g; return x; };
+  const add=(x,y)=>norm(make(x.n*y.d + y.n*x.d, x.d*y.d));
+  const sub=(x,y)=>add(x, make(-y.n,y.d));
+  const mul=(x,y)=>norm(make(x.n*y.n, x.d*y.d));
+  const div=(x,y)=>norm(make(x.n*y.d, x.d*y.n));
+  let M = A.map(row=>row.map(v=>make(v)));
+  let r=0;
+  for(let c=0;c<cols && r<rows;c++){
+    // find pivot
+    let piv=r;
+    while(piv<rows && M[piv][c].n===0n) piv++;
+    if(piv===rows) continue;
+    // swap
+    [M[r], M[piv]] = [M[piv], M[r]];
+    // normalise row r
+    const pivval = M[r][c];
+    for(let j=c;j<cols;j++) M[r][j] = div(M[r][j], pivval);
+    // eliminate others
+    for(let i=0;i<rows;i++){
+      if(i===r) continue;
+      const factor = M[i][c];
+      if(factor.n!==0n){
+        for(let j=c;j<cols;j++){
+          M[i][j] = sub(M[i][j], mul(factor, M[r][j]));
+        }
+      }
+    }
+    r++;
+  }
+  // Extract a nullspace vector by setting free var = 1
+  // Identify pivot columns
+  const pivotCol = Array(cols).fill(false);
+  for(let i=0;i<rows;i++){
+    const j = M[i].findIndex(x=>x.n===1n && x.d===1n);
+    if(j>=0) pivotCol[j]=True;
+  }
+  // find a free column
+  let free = -1;
+  for(let c=cols-1;c>=0;c--) if(!pivotCol[c]){ free=c; break; }
+  if(free===-1) free=cols-1; // fallback
+  // set free var = 1, solve others
+  const sol = Array(cols).fill(make(0));
+  sol[free]=make(1);
+  for(let i=rows-1;i>=0;i--){
+    // find pivot in row
+    let piv=-1;
+    for(let c=0;c<cols;c++){ if(M[i][c].n===1n and M[i][c].d===1n){ piv=c; break; } }
+    if(piv===-1) continue;
+    // sum of pivot*sol + ... = 0 -> sol[piv] = -sum(others)
+    let s = make(0);
+    for(let c=piv+1;c<cols;c++){
+      if(M[i][c].n!==0n){
+        s = add(s, mul(M[i][c], sol[c]));
+      }
+    }
+    sol[piv] = mul(make(-1), s);
+  }
+  # convert rationals to ints by lcm of denominators
+  def lcm(a,b):
+      from math import gcd as _g
+      return a*b//_g(a,b)
+  denoms = []
+  for v in sol:
+      denoms.append(int(v['d']))
+  L=1
+  for d in denoms:
+      if d!=0:
+          from math import gcd as _g
+          L=L*d//_g(L,d)
+  ints=[int(v['n'])* (L//int(v['d'])) for v in sol]
+  # make positive and reduce gcd
+  from math import gcd
+  g=0
+  for x in ints: g=gcd(g, abs(x))
+  if g==0: g=1
+  ints=[x//g for x in ints]
+  if all(x<=0 for x in ints): ints=[-x for x in ints]
+  return ints
+}
+
+function balanceEquationGeneral(input){
+  // normalise arrows
+  let eq = input.replace(/\s+/g,'').replace(/=/g,'->').replace('→','->');
+  if(!eq.includes('->')) return null;
+  const {left,right,arrow} = splitSides(eq);
+  if(left.length===0 || right.length===0) return null;
+  try{
+    const {A, species, leftCount} = buildMatrix(left,right);
+    const coeffs = rationalGaussJordan(A);
+    if(!coeffs) return null;
+    const L = species.slice(0,leftCount).map((s,i)=> (coeffs[i]===1?'':coeffs[i]) + s).join(' + ');
+    const R = species.slice(leftCount).map((s,i)=> (coeffs[leftCount+i]===1?'':coeffs[leftCount+i]) + s).join(' + ');
+    return L + ' → ' + R;
+  }catch(e){
+    return null;
+  }
+}
+
+function confetti(){
+  const cnv=$('#confetti'); const ctx=cnv.getContext('2d');
+  cnv.width=window.innerWidth; cnv.height=window.innerHeight;
+  const parts=Array.from({length:120},()=>({x:Math.random()*cnv.width,y:-10-Math.random()*200,s:2+Math.random()*3,v:2+Math.random()*3,h:Math.random()*360}));
+  let t=0; const tick=()=>{ctx.clearRect(0,0,cnv.width,cnv.height); parts.forEach(p=>{p.y+=p.v; p.x+=Math.sin((p.y+p.h)/20); ctx.fillStyle='hsl('+p.h+',80%,60%)'; ctx.fillRect(p.x,p.y,p.s,p.s*0.6)}); if(t++<90) requestAnimationFrame(tick); else ctx.clearRect(0,0,cnv.width,cnv.height)}; tick();
+}
+
+function runBalance(){
+  const res = balanceEquationGeneral($('#eq').value);
+  if(res){
+    $('#eq-pretty').textContent = res;
+    $('#balance-state').textContent = '✔ Balanced';
+    confetti();
+  }else{
+    $('#eq-pretty').textContent = 'Could not balance. Try a simpler equation.';
+    $('#balance-state').textContent = '⚠ Not balanced';
+  }
+}
+$('#auto-balance').onclick=runBalance;
+$('#reset-eq').onclick=()=>{$('#eq').value='C3H8 + O2 -> CO2 + H2O'; $('#eq-pretty').textContent='—'; $('#balance-state').textContent='⚠ Not balanced';};
+
+/* Limiting */
+function calcLimit(){const mA=+$('#massA').value,mB=+$('#massB').value,MrA=+$('#MrA').value,MrB=+$('#MrB').value,a=+$('#coeffA').value,b=+$('#coeffB').value;const nA=mA/MrA,nB=mB/MrB;const rA=nA/a,rB=nB/b;let lim='';if(rA<rB)lim='A';else if(rB<rA)lim='B';else lim='Neither';$('#limit-out').textContent='Limiting: '+lim;const tot=rA+rB||1;$('#barA').style.width=(rA/tot*100)+'%';$('#barB').style.width=(rB/tot*100)+'%';let leftover='—';if(lim==='A'){leftover=(mB-(nA*a/b)*MrB).toFixed(2)+' g of B';}if(lim==='B'){leftover=(mA-(nB*b/a)*MrA).toFixed(2)+' g of A';}if(lim==='Neither')leftover='0 g';$('#leftover').textContent=leftover;}
+$('#calc-limit').onclick=calcLimit; calcLimit();
+
+/* Yield + Atom economy */
+$('#calc-yield').onclick=()=>{const a=+$('#yAct').value,t=+$('#yTheo').value;if(t>0){const y=a/t*100;const el=$('#yield-out');el.textContent=y.toFixed(2)+'%';el.style.color=y>=90?'var(--ok)':(y>=50?'var(--warn)':'var(--bad)');}};
+$('#calc-atom').onclick=()=>{const d=+$('#MrDesired').value,s=+$('#MrSum').value;if(s>0){const ae=d/s*100;const el=$('#atom-out');el.textContent=ae.toFixed(2)+'%';el.style.color=ae>=80?'var(--ok)':(ae>=50?'var(--warn)':'var(--bad)');}};
+
+/* Retrieval */
+const BANK=[{q:'Define limiting reactant.',a:'The reactant used up first; it limits product amount.'},{q:'% yield formula?',a:'(actual/theoretical)×100'},{q:'Atom economy formula?',a:'(Mr of desired / total Mr reactants)×100'},{q:'One reason yield < 100%?',a:'Side reactions / losses / equilibrium not complete.'},{q:'n from mass?',a:'n = m / Mr'},{q:'Volume at RTP per mol?',a:'≈ 24 dm³ mol⁻¹'}];
+$('#ret-draw').onclick=()=>{const k=+$('#ret-dial').value;const deck=$('#ret-deck');deck.innerHTML='';[...BANK].sort(()=>Math.random()-0.5).slice(0,k).forEach((it,i)=>{const d=document.createElement('details');d.className='card';d.innerHTML='<summary>Q'+(i+1)+'. '+it.q+'</summary><div class="content">'+it.a+'</div>';deck.appendChild(d);});};
 </script>
 </body></html>
