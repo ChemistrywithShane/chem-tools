@@ -47,6 +47,10 @@ function populateExampleList(){
     const okTopic = (topic === 'ALL') || (e.topic === topic);
     return okLevel && okTopic;
   });
+  if (filtered.length === 0) {
+  exSel.innerHTML = `<option value="" selected>(no examples for this filter)</option>`;
+  return;
+}
   exSel.innerHTML = `<option value="" selected>— select an example —</option>` +
     filtered.map(e => `<option value="${e.id}">${exampleLabel(e)}</option>`).join('');
 }
