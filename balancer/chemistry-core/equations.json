@@ -1,37 +1,404 @@
 [
-  { "id":"combust_methane", "level":["GCSE"], "topic":"combustion",
-    "reactants":["CH4","O2"], "products":["CO2","H2O"] },
+  /* ---------- COMBUSTION (GCSE) ---------- */
+  {
+    "id": "combust_methane",
+    "level": ["GCSE"],
+    "topic": "combustion",
+    "difficulty": "starter",
+    "reactants": ["CH4", "O2"],
+    "products": ["CO2", "H2O"],
+    "hint_steps": [
+      "Combustion → products are CO2 and H2O.",
+      "Balance C first → 1 CO2.",
+      "Balance H next → 2 H2O.",
+      "Balance O last → needs 2 O2."
+    ],
+    "tags": ["complete_combustion"],
+    "source": "AQA-8462",
+    "notes": "Classic GCSE balancing pattern: C, H, then O."
+  },
+  {
+    "id": "combust_ethanol",
+    "level": ["GCSE"],
+    "topic": "combustion",
+    "difficulty": "core",
+    "reactants": ["C2H5OH", "O2"],
+    "products": ["CO2", "H2O"],
+    "hint_steps": [
+      "Write CO2 and H2O as products.",
+      "Balance C → 2 CO2.",
+      "Balance H → 3 H2O.",
+      "Balance O last (count total O in products) → needs 3 O2."
+    ],
+    "tags": ["complete_combustion"],
+    "source": "AQA-8462"
+  },
+  {
+    "id": "combust_propane",
+    "level": ["GCSE"],
+    "topic": "combustion",
+    "difficulty": "core",
+    "reactants": ["C3H8", "O2"],
+    "products": ["CO2", "H2O"],
+    "hint_steps": [
+      "Products: CO2 and H2O.",
+      "Balance C → 3 CO2.",
+      "Balance H → 4 H2O.",
+      "Balance O last → requires 5 O2."
+    ],
+    "tags": ["complete_combustion"],
+    "source": "AQA-8462"
+  },
 
-  { "id":"combust_ethanol", "level":["GCSE"], "topic":"combustion",
-    "reactants":["C2H5OH","O2"], "products":["CO2","H2O"] },
+  /* ---------- NEUTRALISATION (GCSE) ---------- */
+  {
+    "id": "neutralisation_hcl_naoh",
+    "level": ["GCSE"],
+    "topic": "neutralisation",
+    "difficulty": "starter",
+    "reactants": ["HCl", "NaOH"],
+    "products": ["NaCl", "H2O"],
+    "hint_steps": [
+      "Acid + alkali → salt + water.",
+      "H+ and OH- form H2O.",
+      "Na+ with Cl- forms NaCl.",
+      "All 1:1:1:1"
+    ],
+    "tags": ["titration_intro"],
+    "source": "AQA-8462"
+  },
+  {
+    "id": "neutralisation_h2so4_naoh",
+    "level": ["GCSE"],
+    "topic": "neutralisation",
+    "difficulty": "core",
+    "reactants": ["H2SO4", "NaOH"],
+    "products": ["Na2SO4", "H2O"],
+    "hint_steps": [
+      "Sulfuric acid is diprotic (2 H+).",
+      "Match 2 OH- to make 2 H2O.",
+      "Two Na+ balance SO4^2- → Na2SO4.",
+      "Final check."
+    ],
+    "tags": ["diprotic_acid"],
+    "source": "AQA-8462"
+  },
+  {
+    "id": "neutralisation_hno3_naoh",
+    "level": ["GCSE"],
+    "topic": "neutralisation",
+    "difficulty": "starter",
+    "reactants": ["HNO3", "NaOH"],
+    "products": ["NaNO3", "H2O"],
+    "hint_steps": [
+      "Monoprotic acid → 1 H+.",
+      "H+ + OH- → H2O.",
+      "Na+ + NO3- → NaNO3."
+    ],
+    "tags": ["titration_intro"],
+    "source": "AQA-8462"
+  },
 
-  { "id":"combust_propane", "level":["GCSE"], "topic":"combustion",
-    "reactants":["C3H8","O2"], "products":["CO2","H2O"] },
+  /* ---------- PRECIPITATION (GCSE) ---------- */
+  {
+    "id": "precipitation_agcl",
+    "level": ["GCSE"],
+    "topic": "precipitation",
+    "difficulty": "starter",
+    "reactants": ["AgNO3", "NaCl"],
+    "products": ["AgCl", "NaNO3"],
+    "hint_steps": [
+      "Swap partners (double displacement).",
+      "Ag+ + Cl- → AgCl(s).",
+      "Na+ + NO3- → NaNO3 (aq).",
+      "All coefficients 1."
+    ],
+    "tags": ["silver_halide"],
+    "source": "AQA-8462"
+  },
+  {
+    "id": "precipitation_baso4",
+    "level": ["GCSE"],
+    "topic": "precipitation",
+    "difficulty": "core",
+    "reactants": ["BaCl2", "Na2SO4"],
+    "products": ["BaSO4", "NaCl"],
+    "hint_steps": [
+      "Ba2+ pairs with SO4^2- → BaSO4(s).",
+      "Na+ pairs with Cl- → NaCl.",
+      "Balance Na and Cl → 2 NaCl."
+    ],
+    "tags": ["sulfate_test"],
+    "source": "AQA-8462"
+  },
 
-  { "id":"neutralisation_hcl_naoh", "level":["GCSE"], "topic":"neutralisation",
-    "reactants":["HCl","NaOH"], "products":["NaCl","H2O"] },
+  /* ---------- DISPLACEMENT (GCSE) ---------- */
+  {
+    "id": "displacement_zn_cuso4",
+    "level": ["GCSE"],
+    "topic": "displacement",
+    "difficulty": "starter",
+    "reactants": ["Zn", "CuSO4"],
+    "products": ["ZnSO4", "Cu"],
+    "hint_steps": [
+      "More reactive Zn pushes out Cu.",
+      "SO4^2- remains as spectator.",
+      "All 1:1:1:1."
+    ],
+    "tags": ["reactivity_series"],
+    "source": "AQA-8462"
+  },
+  {
+    "id": "displacement_fe_cuso4",
+    "level": ["GCSE"],
+    "topic": "displacement",
+    "difficulty": "starter",
+    "reactants": ["Fe", "CuSO4"],
+    "products": ["FeSO4", "Cu"],
+    "hint_steps": [
+      "Fe is above Cu in the series.",
+      "Sulfate stays paired.",
+      "All coefficients 1."
+    ],
+    "tags": ["reactivity_series"],
+    "source": "AQA-8462"
+  },
 
-  { "id":"neutralisation_h2so4_naoh", "level":["GCSE"], "topic":"neutralisation",
-    "reactants":["H2SO4","NaOH"], "products":["Na2SO4","H2O"] },
+  /* ---------- THERMAL DECOMPOSITION (GCSE) ---------- */
+  {
+    "id": "thermal_decomp_caco3",
+    "level": ["GCSE"],
+    "topic": "thermal_decomposition",
+    "difficulty": "starter",
+    "reactants": ["CaCO3"],
+    "products": ["CaO", "CO2"],
+    "hint_steps": [
+      "Carbonate → oxide + CO2.",
+      "All 1:1:1."
+    ],
+    "tags": ["lime_cycle"],
+    "source": "AQA-8462"
+  },
+  {
+    "id": "thermal_decomp_kclo3",
+    "level": ["GCSE"],
+    "topic": "thermal_decomposition",
+    "difficulty": "stretch",
+    "reactants": ["KClO3"],
+    "products": ["KCl", "O2"],
+    "hint_steps": [
+      "Chlorate decomposes to chloride + O2.",
+      "Start with O2 even number → 3 O2 on right.",
+      "Balance K and Cl with 2 KClO3.",
+      "Final: 2 KClO3 → 2 KCl + 3 O2."
+    ],
+    "tags": ["oxygen_source"],
+    "source": "AQA-8462"
+  },
 
-  { "id":"neutralisation_hno3_naoh", "level":["GCSE"], "topic":"neutralisation",
-    "reactants":["HNO3","NaOH"], "products":["NaNO3","H2O"] },
+  /* ---------- OXIDATION / FORMATION (GCSE) ---------- */
+  {
+    "id": "oxidation_fe_oxygen",
+    "level": ["GCSE"],
+    "topic": "oxidation",
+    "difficulty": "core",
+    "reactants": ["Fe", "O2"],
+    "products": ["Fe2O3"],
+    "hint_steps": [
+      "Target Fe2O3.",
+      "Balance Fe → 4 Fe gives 2 Fe2O3.",
+      "Balance O → needs 3 O2."
+    ],
+    "tags": ["rusting_idealised"],
+    "source": "AQA-8462"
+  },
 
-  { "id":"precipitation_agcl", "level":["GCSE"], "topic":"precipitation",
-    "reactants":["AgNO3","NaCl"], "products":["AgCl","NaNO3"] },
+  /* ---------- GAS TESTS / SIMPLE SYNTHESIS (GCSE) ---------- */
+  {
+    "id": "gas_hydrogen_from_acid_metal",
+    "level": ["GCSE"],
+    "topic": "gas_tests",
+    "difficulty": "starter",
+    "reactants": ["Mg", "HCl"],
+    "products": ["MgCl2", "H2"],
+    "hint_steps": [
+      "Metal + acid → salt + hydrogen.",
+      "Mg2+ needs 2 Cl- → MgCl2.",
+      "H+ balance → 2 HCl."
+    ],
+    "tags": ["hydrogen_test"],
+    "source": "AQA-8462"
+  },
+  {
+    "id": "gas_co2_from_acid_carbonate",
+    "level": ["GCSE"],
+    "topic": "gas_tests",
+    "difficulty": "starter",
+    "reactants": ["CaCO3", "HCl"],
+    "products": ["CaCl2", "CO2", "H2O"],
+    "hint_steps": [
+      "Carbonate + acid → CO2 + H2O + salt.",
+      "Ca2+ pairs with 2 Cl- → CaCl2.",
+      "H balance → 2 HCl."
+    ],
+    "tags": ["limewater_test"],
+    "source": "AQA-8462"
+  },
 
-  { "id":"thermal_decomp_caco3", "level":["GCSE"], "topic":"thermal_decomposition",
-    "reactants":["CaCO3"], "products":["CaO","CO2"] },
+  /* ---------- HYDRATES (ALevel & GCSE extension) ---------- */
+  {
+    "id": "alum_hydrate",
+    "level": ["ALevel", "GCSE"],
+    "topic": "hydrates",
+    "difficulty": "stretch",
+    "reactants": ["Al2(SO4)3·18H2O"],
+    "products": ["Al2(SO4)3", "H2O"],
+    "hint_steps": [
+      "Treat ‘·18H2O’ as water of crystallisation.",
+      "Move 18 H2O to products when heating.",
+      "All coefficients 1 except water."
+    ],
+    "tags": ["water_of_crystallisation"],
+    "source": "AQA-7405"
+  },
+  {
+    "id": "copper_ii_sulfate_pentahydrate",
+    "level": ["GCSE", "ALevel"],
+    "topic": "hydrates",
+    "difficulty": "core",
+    "reactants": ["CuSO4·5H2O"],
+    "products": ["CuSO4", "H2O"],
+    "hint_steps": [
+      "Blue crystals lose water on heating.",
+      "Transfer 5 H2O to the products.",
+      "All other coefficients 1."
+    ],
+    "tags": ["water_of_crystallisation"],
+    "source": "AQA-8462"
+  },
 
-  { "id":"displacement_zn_cuso4", "level":["GCSE"], "topic":"displacement",
-    "reactants":["Zn","CuSO4"], "products":["ZnSO4","Cu"] },
+  /* ---------- REDOX (ALevel ionic equations & titrations) ---------- */
+  {
+    "id": "redox_mno4_fe2_acidic",
+    "level": ["ALevel"],
+    "topic": "redox",
+    "difficulty": "core",
+    "reactants": ["MnO4^-", "Fe^2+", "H^+"],
+    "products": ["Mn^2+", "Fe^3+", "H2O"],
+    "hint_steps": [
+      "MnO4^- → Mn^2+ (gain 5 e^-).",
+      "Fe^2+ → Fe^3+ (lose 1 e^-).",
+      "LCM of electrons = 5 → 5 Fe^2+.",
+      "Balance H and O in acidic medium with H+ and H2O."
+    ],
+    "tags": ["titration", "ionic_equation"],
+    "source": "AQA-7405",
+    "notes": "Net ionic; exclude spectator anions."
+  },
+  {
+    "id": "redox_dichromate_fe2_acidic",
+    "level": ["ALevel"],
+    "topic": "redox",
+    "difficulty": "core",
+    "reactants": ["Cr2O7^2-", "Fe^2+", "H^+"],
+    "products": ["Cr^3+", "Fe^3+", "H2O"],
+    "hint_steps": [
+      "Cr2O7^2- → 2 Cr^3+ (gain 6 e^-).",
+      "Fe^2+ → Fe^3+ (lose 1 e^-).",
+      "LCM = 6 → 6 Fe^2+.",
+      "Balance O with H2O and H with H+."
+    ],
+    "tags": ["titration", "ionic_equation"],
+    "source": "AQA-7405"
+  },
+  {
+    "id": "iodine_thiosulfate",
+    "level": ["ALevel"],
+    "topic": "redox",
+    "difficulty": "core",
+    "reactants": ["I2", "S2O3^2-"],
+    "products": ["I^-", "S4O6^2-"],
+    "hint_steps": [
+      "I2 is reduced to 2 I^- (gain 2 e^-).",
+      "Two thiosulfate donate 2 e^- → 2 S2O3^2- → S4O6^2-.",
+      "Overall: I2 + 2 S2O3^2- → 2 I^- + S4O6^2-."
+    ],
+    "tags": ["titration", "ionic_equation"],
+    "source": "AQA-7405"
+  },
+  {
+    "id": "disproportionation_kmno4_alkaline",
+    "level": ["ALevel"],
+    "topic": "redox",
+    "difficulty": "stretch",
+    "reactants": ["KMnO4"],
+    "products": ["K2MnO4", "MnO2", "O2"],
+    "hint_steps": [
+      "Mn(VII) disproportionates in base.",
+      "Target Mn(VI) and Mn(IV) products.",
+      "Balance O2 with even count; then K and Mn."
+    ],
+    "tags": ["disproportionation"],
+    "source": "AQA-7405"
+  },
 
-  { "id":"oxidation_fe_oxygen", "level":["GCSE"], "topic":"oxidation",
-    "reactants":["Fe","O2"], "products":["Fe2O3"] },
+  /* ---------- ELECTROLYSIS (GCSE/ALevel ionic half equations) ---------- */
+  {
+    "id": "electrolysis_na_cl_molten_overall",
+    "level": ["GCSE"],
+    "topic": "electrolysis",
+    "difficulty": "core",
+    "reactants": ["NaCl"],
+    "products": ["Na", "Cl2"],
+    "hint_steps": [
+      "Molten NaCl splits into Na(l) and Cl2(g).",
+      "Overall from half-equations: 2 NaCl → 2 Na + Cl2."
+    ],
+    "tags": ["overall_cell_reaction"],
+    "source": "AQA-8462"
+  },
+  {
+    "id": "electrolysis_water_acidic_half",
+    "level": ["ALevel", "GCSE"],
+    "topic": "electrolysis",
+    "difficulty": "core",
+    "reactants": ["H2O"],
+    "products": ["H2", "O2"],
+    "hint_steps": [
+      "Acidic water electrolysis overall:",
+      "2 H2O → 2 H2 + O2 (from 2H+ + 2e- and O2 + 4H+ + 4e-)."
+    ],
+    "tags": ["overall_cell_reaction"],
+    "source": "AQA-7405"
+  },
 
-  { "id":"kmno4_disproportionation", "level":["ALevel"], "topic":"redox",
-    "reactants":["KMnO4"], "products":["K2MnO4","MnO2","O2"] },
-
-  { "id":"alum_hydrate", "level":["ALevel"], "topic":"hydrates",
-    "reactants":["Al2(SO4)3·18H2O"], "products":["Al2(SO4)3","H2O"] }
+  /* ---------- INDUSTRIAL SNIPPETS (GCSE/ALevel context) ---------- */
+  {
+    "id": "haber_ammonia_overall",
+    "level": ["GCSE", "ALevel"],
+    "topic": "industrial",
+    "difficulty": "starter",
+    "reactants": ["N2", "H2"],
+    "products": ["NH3"],
+    "hint_steps": [
+      "Haber: N2 + 3 H2 ⇌ 2 NH3 (overall stoichiometry).",
+      "Balance N first, then H."
+    ],
+    "tags": ["equilibrium", "energy"],
+    "source": "AQA-7405"
+  },
+  {
+    "id": "contact_so2_to_so3_overall",
+    "level": ["ALevel"],
+    "topic": "industrial",
+    "difficulty": "core",
+    "reactants": ["SO2", "O2"],
+    "products": ["SO3"],
+    "hint_steps": [
+      "Contact process step: 2 SO2 + O2 → 2 SO3.",
+      "Even O helps balancing."
+    ],
+    "tags": ["equilibrium", "vanadium_v_oxide"],
+    "source": "AQA-7405"
+  }
 ]
