@@ -87,6 +87,51 @@
   </section>
 
   <datalist id="speciesList"></datalist>
+
+  <!-- Ion Builder Modal (HTML shell; JS wiring comes next) -->
+<div id="ionModal" class="modal" aria-hidden="true">
+  <div class="modal__backdrop" role="presentation"></div>
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="ionTitle">
+    <header class="modal__head">
+      <h3 id="ionTitle">Build Ionic Compound</h3>
+      <button id="ionClose" class="modal__close" aria-label="Close">×</button>
+    </header>
+
+    <div class="modal__body">
+      <div class="ion-row">
+        <label>Cation
+          <select id="ionCation">
+            <option value="">— choose a cation —</option>
+            <!-- populated by JS later -->
+          </select>
+        </label>
+
+        <label>Anion
+          <select id="ionAnion">
+            <option value="">— choose an anion —</option>
+            <!-- populated by JS later -->
+          </select>
+        </label>
+      </div>
+
+      <div class="ion-preview">
+        <div class="ion-chip">Preview</div>
+        <div id="ionPreview" class="mono">—</div>
+      </div>
+    </div>
+
+    <footer class="modal__foot">
+      <div class="modal__side">
+        <label class="toggle"><input type="checkbox" id="ionAddParens"> Use parentheses for polyatomic ions</label>
+      </div>
+      <div class="modal__actions">
+        <button id="ionInsertReactant" class="primary">Add to Reactants</button>
+        <button id="ionInsertProduct" class="primary">Add to Products</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
 </main>
 
 <footer class="foot">Foundations MVP • parser & solver are modular and tested • Hydrates (·) and charges (^2-, ^+) supported.</footer>
