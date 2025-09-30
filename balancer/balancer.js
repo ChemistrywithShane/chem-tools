@@ -258,6 +258,15 @@ function buildCompound(cation, anion) {
          (nAn>1 ? nAn : '');
 }
 
+// ---------- Helpers ----------
+function subNum(n){
+  const subs = {0:'₀',1:'₁',2:'₂',3:'₃',4:'₄',5:'₅',6:'₆',7:'₇',8:'₈',9:'₉'};
+  return String(n).split('').map(ch=>subs[ch]||ch).join('');
+}
+function gcd(a,b){ return b ? gcd(b,a%b) : a; }
+function lcm(a,b){ return a*b/gcd(a,b); }
+
+
 const ionCatSel = $('#ionCation');
 const ionAnSel  = $('#ionAnion');
 const ionPrev   = $('#ionPreview');
@@ -266,12 +275,32 @@ ionCatSel?.addEventListener('change', updateIonPreview);
 ionAnSel?.addEventListener('change', updateIonPreview);
 
 function updateIonPreview(){
-  // Placeholder until 2C — show raw selection for now
   const c = ionCatSel?.value !== '' ? CATIONS[Number(ionCatSel.value)] : null;
   const a = ionAnSel?.value  !== '' ? ANIONS[Number(ionAnSel.value)]  : null;
-  if(!c || !a){ ionPrev.textContent = '—'; return; }
-  ionPrev.textContent = (c.display || c.id) + ' + ' + (a.display || a.id);
+  if(!c || !a){ ionPrev.textContent = '—'; updateIonButtons(); return; }
+
+  // Lowest common multiple method
+  const qCat = Math.abs(c.charge);
+  const qAn  = Math.abs(a.charge);
+  const mult = lcm(qCat, qAn);
+  const nCat = mult / qCat;
+  const nAn  = mult / qAn;
+
+  // Parentheses option for polyatomics
+  const useParens = $('#ionAddParens').checked;
+  const formatIon = (ion, n) => {
+    let base = ion.display.replace(/\^.*$/,''); // strip charge from display
+    if(useParens && ion.id.includes('_')) base = '('+base+')'; // crude polyatomic test
+    return base + (n>1 ? subNum(n) : '');
+  };
+
+  const formula = formatIon(c,nCat) + formatIon(a,nAn);
+
+  ionPrev.textContent = `${c.display} + ${a.display} → ${formula}`;
+  ionPrev.dataset.formula = formula; // stash for insertion
+  updateIonButtons();
 }
+
 
 const btnAddR = $('#ionInsertReactant');
 const btnAddP = $('#ionInsertProduct');
