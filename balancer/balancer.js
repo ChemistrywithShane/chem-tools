@@ -68,7 +68,6 @@ let CATIONS = [], ANIONS = [];
   }catch(e){ console.warn('ion load failed', e); }
 })();
 
-
 // ------- EXAMPLES DROPDOWN -------
 let EXAMPLES = [];
 
@@ -98,9 +97,9 @@ function populateExampleList(){
     return okLevel && okTopic;
   });
   if (filtered.length === 0) {
-  exSel.innerHTML = `<option value="" selected>(no examples for this filter)</option>`;
-  return;
-}
+    exSel.innerHTML = `<option value="" selected>(no examples for this filter)</option>`;
+    return;
+  }
   exSel.innerHTML = `<option value="" selected>— select an example —</option>` +
     filtered.map(e => `<option value="${e.id}">${exampleLabel(e)}</option>`).join('');
 }
@@ -108,31 +107,24 @@ function populateExampleList(){
 document.getElementById('levelSelect').addEventListener('change', populateExampleList);
 document.getElementById('topicSelect').addEventListener('change', populateExampleList);
 
-document.getElementById('loadExample').addEventListener('click', () => {
-  const id = document.getElementById('exampleSelect').value;
-  if(!id) return;
-  const ex = EXAMPLES.find(e => e.id === id);
-  if(!ex) return;
-
+// ---- AUTO-LOAD on example change ----
 document.getElementById('exampleSelect')?.addEventListener('change', (e)=>{
   const id = e.target.value;
   if(id) loadExampleById(id);  // auto-populate immediately
 });
 
-  
 // Load a chosen example into the boxes; also sync Teacher Mode if on
 function loadExampleById(id){
   const ex = EXAMPLES.find(e => e.id === id);
   if(!ex) return;
 
-  // ensure enough boxes & write values
   ensureBoxes('#reactants', (ex.reactants||[]).length);
   ensureBoxes('#products',  (ex.products ||[]).length);
   writeBoxes('#reactants', ex.reactants||[]);
   writeBoxes('#products',  ex.products ||[]);
   $('#tallies').innerHTML = ''; $('#result').textContent='—'; $('#status').textContent='—';
 
-  // if Teacher Mode is on, show the card and point it at this example
+  // If Teacher Mode is on, show/update the card to this example
   if (TEACH.on){
     if(TEACH.sets.size === 0){ buildSets(); hydrateSetSelect(); }
     const lvl  = (ex.level && ex.level[0]) || 'GCSE';
@@ -144,12 +136,13 @@ function loadExampleById(id){
       if(idx >= 0) TEACH.index = idx;
       renderCard();
     } else {
-      // fallback: render from current boxes
       renderCardFromBoxesOrCurrent();
     }
     eqCard.hidden = false;
   }
 }
+
+
 
   
   // ---------- TEACHER MODE ----------
@@ -281,9 +274,6 @@ function renderCardFromBoxesOrCurrent(){
   eqTags.innerHTML = `<span class="badge">Custom</span>`;
 }
 
-
-  
-// Toggle Teacher Mode on/off
 teacherToggle?.addEventListener('change', () => {
   TEACH.on = teacherToggle.checked;
   teacherBar.hidden = !TEACH.on;
@@ -291,10 +281,12 @@ teacherToggle?.addEventListener('change', () => {
   if(TEACH.on){
     buildSets();
     hydrateSetSelect();
-    // default: first available set
-    const firstKey = setSelect.value || Array.from(TEACH.sets.keys())[0];
-    if(firstKey){ selectSet(firstKey, diffSelect.value); }
+    renderCardFromBoxesOrCurrent(); // blank card or from current boxes
+    refreshMaskButton();            // "Hide/Show Balancing Numbers"
   }
+});
+ 
+
 });
 
 // Events
@@ -307,18 +299,6 @@ btnMask?.addEventListener('click', toggleMask);
 btnLoadBoxes?.addEventListener('click', loadToBoxes);
 
 
-  teacherToggle?.addEventListener('change', () => {
-  TEACH.on = teacherToggle.checked;
-  teacherBar.hidden = !TEACH.on;
-  eqCard.hidden = !TEACH.on;
-  if(TEACH.on){
-    buildSets();
-    hydrateSetSelect();
-    // show something immediately from boxes if no example is active
-    renderCardFromBoxesOrCurrent();
-    refreshMaskButton(); // from section 2 below
-  }
-});
   
 document.addEventListener('input', (e)=>{
   if(!TEACH.on) return;
@@ -499,13 +479,12 @@ function updateIonPreview(){
   const a = ionAnSel?.value  !== '' ? ANIONS[Number(ionAnSel.value)]  : null;
   if(!c || !a){ ionPrev.textContent = '—'; updateIonButtons(); return; }
 
-btnAddR?.addEventListener('click', () => insertIonFormula('reactants'));
-btnAddP?.addEventListener('click', () => insertIonFormula('products'));
-
 function insertIonFormula(target){
   const f = ionPrev.dataset.formula;
   if(!f) return;
 
+
+  
   // Ensure enough boxes
   ensureBoxes('#'+target, 1);
 
@@ -518,6 +497,7 @@ function insertIonFormula(target){
   closeIon();
 }
 
+  
   
   // Helpers
   const cleanBase = (ion) => {
@@ -557,6 +537,33 @@ function insertIonFormula(target){
   ionPrev.dataset.formula = formula; // stash for insertion in 2D
   updateIonButtons();
 }
+// Attach once-only handlers for the modal "Add" buttons
+const btnAddR = $('#ionInsertReactant');
+const btnAddP = $('#ionInsertProduct');
+
+btnAddR?.addEventListener('click', () => insertIonFormula('reactants'));
+btnAddP?.addEventListener('click', () => insertIonFormula('products'));
+
+function insertIonFormula(target){
+  // Uses the formula string we stashed on the preview element
+  const f = ionPrev?.dataset?.formula;
+  if(!f) return;
+
+  // Ensure the target section has at least one box
+  ensureBoxes('#' + target, 1);
+
+  // Fill the first empty input; if none empty, overwrite the last box
+  const inputs = Array.from(document.querySelectorAll('#' + target + ' .species'));
+  const empty = inputs.find(i => !i.value.trim());
+  (empty || inputs[inputs.length - 1]).value = f;
+
+  // Close the modal
+  closeIon();
+
+  // If Teacher Mode is on, update the flashcard from boxes
+  if (TEACH?.on) renderCardFromBoxesOrCurrent();
+}
+
 
 
 
