@@ -244,11 +244,17 @@ function shuffleEq(){
   for(let i=TEACH.ids.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [TEACH.ids[i],TEACH.ids[j]]=[TEACH.ids[j],TEACH.ids[i]]; }
   TEACH.index = 0; renderCard();
 }
+function refreshMaskButton(){
+  btnMask.textContent = TEACH.masked ? 'Hide Balancing Numbers' : 'Show Balancing Numbers';
+}
+
 function toggleMask(){
   TEACH.masked = !TEACH.masked;
-  btnMask.textContent = TEACH.masked ? 'Hide coefficients' : 'Show coefficients';
-  renderCard();
+  refreshMaskButton();
+  // re-render whichever source is active
+  renderCardFromBoxesOrCurrent();
 }
+
 function loadToBoxes(){
   const eq = currentEq(); if(!eq) return;
   ensureBoxes('#reactants', (eq.reactants||[]).length);
