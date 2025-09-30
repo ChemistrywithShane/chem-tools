@@ -19,6 +19,87 @@ const $$ = (q, el=document)=>Array.from(el.querySelectorAll(q));
   }catch(e){ console.warn('species load failed', e); }
 })();
 
+// ------- EXAMPLES DROPDOWN -------
+let EXAMPLES = [];
+
+(async function loadExamples(){
+  try{
+    const res = await fetch('./chemistry-core/equations.json');
+    EXAMPLES = await res.json();
+    hydrateTopicSelect();
+    populateExampleList(); // initial population
+  }catch(e){ console.warn('equations load failed', e); }
+})();
+
+function hydrateTopicSelect(){
+  const topics = Array.from(new Set(EXAMPLES.flatMap(e => e.topic ? [e.topic] : []))).sort();
+  const topicSel = document.getElementById('topicSelect');
+  topicSel.innerHTML = `<option value="ALL" selected>All topics</option>` +
+    topics.map(t => `<option value="${t}">${prettyLabel(t)}</option>`).join('');
+}
+
+function populateExampleList(){
+  const lvl = document.getElementById('levelSelect').value;
+  const topic = document.getElementById('topicSelect').value;
+  const exSel = document.getElementById('exampleSelect');
+  const filtered = EXAMPLES.filter(e => {
+    const okLevel = (lvl === 'ALL') || (e.level || []).includes(lvl);
+    const okTopic = (topic === 'ALL') || (e.topic === topic);
+    return okLevel && okTopic;
+  });
+  exSel.innerHTML = `<option value="" selected>— select an example —</option>` +
+    filtered.map(e => `<option value="${e.id}">${exampleLabel(e)}</option>`).join('');
+}
+
+document.getElementById('levelSelect').addEventListener('change', populateExampleList);
+document.getElementById('topicSelect').addEventListener('change', populateExampleList);
+
+document.getElementById('loadExample').addEventListener('click', () => {
+  const id = document.getElementById('exampleSelect').value;
+  if(!id) return;
+  const ex = EXAMPLES.find(e => e.id === id);
+  if(!ex) return;
+
+  // ensure enough boxes exist
+  ensureBoxes('#reactants', ex.reactants.length);
+  ensureBoxes('#products', ex.products.length);
+
+  // write values
+  writeBoxes('#reactants', ex.reactants);
+  writeBoxes('#products', ex.products);
+
+  // clear old output
+  $('#tallies').innerHTML = '';
+  $('#result').textContent = '—';
+  $('#status').textContent = '—';
+});
+
+function ensureBoxes(sectionSelector, n){
+  const grid = document.querySelector(sectionSelector);
+  const inputs = Array.from(grid.querySelectorAll('.species'));
+  const addBtn = grid.querySelector('button');
+  let need = n - inputs.length;
+  while(need-- > 0){
+    const div = document.createElement('div');
+    div.className='box';
+    div.innerHTML = '<input class="species" list="speciesList" placeholder="(reactant/product)">';
+    grid.insertBefore(div, addBtn);
+  }
+}
+function writeBoxes(sectionSelector, values){
+  const inputs = Array.from(document.querySelectorAll(sectionSelector+' .species'));
+  inputs.forEach((inp,i)=>{ inp.value = values[i] || ''; });
+}
+function exampleLabel(e){
+  // Build a friendly label like: "Combustion — C3H8 + O2 → CO2 + H2O"
+  const left = (e.reactants || []).join(' + ');
+  const right = (e.products || []).join(' + ');
+  const topic = e.topic ? prettyLabel(e.topic) : 'Example';
+  return `${topic} — ${left} → ${right}`;
+}
+function prettyLabel(s){ return s.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
+
+
 // Add/remove boxes
 $('#add-reactant').onclick = ()=> addBox('#reactants');
 $('#add-product').onclick = ()=> addBox('#products');
