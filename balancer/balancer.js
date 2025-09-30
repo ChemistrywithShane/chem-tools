@@ -244,10 +244,36 @@ function unmaskedEqText(eq){
   const R=(eq.products ||[]).join('  +  ');
   return `${L}  →  ${R}`;
 }
+function balancedEqText(eq){
+  // Compute integer coefficients and print them on the card
+  try{
+    // Use current charge toggle if you like; default false
+    const charge = $('#chargeToggle')?.checked || false;
+
+    const { A } = buildMatrixFromReaction(eq.reactants || [], eq.products || [], charge);
+    const v = nullspaceVector(A);
+    if(!v || !v.length) return unmaskedEqText(eq); // graceful fallback
+
+    const leftLen = (eq.reactants || []).length;
+    const left = (eq.reactants || []).map((s,i) =>
+      (v[i] === 1 ? '' : v[i] + ' ') + s
+    ).join('  +  ');
+    const right = (eq.products || []).map((s,i) =>
+      (v[leftLen + i] === 1 ? '' : v[leftLen + i] + ' ') + s
+    ).join('  +  ');
+
+    return `${left}  →  ${right}`;
+  }catch(e){
+    console.warn('balancedEqText failed:', e);
+    return unmaskedEqText(eq);
+  }
+}
+
+
 function renderCard(){
   const eq=currentEq();
   if(!eq || TEACH.ids.length===0){ eqText.textContent='—'; eqTags.innerHTML=''; return; }
-  eqText.textContent = TEACH.masked ? maskEqText(eq) : unmaskedEqText(eq);
+ eqText.textContent = TEACH.masked ? maskEqText(eq) : balancedEqText(eq);
   eqTags.innerHTML   = `
     <span class="badge">${(eq.level||[]).join(', ')||'—'}</span>
     <span class="badge">${prettyLabel(eq.topic||'misc')}</span>
@@ -257,7 +283,13 @@ function renderCard(){
 function nextEq(){ if(TEACH.ids.length){ TEACH.index=(TEACH.index+1)%TEACH.ids.length; renderCard(); } }
 function prevEq(){ if(TEACH.ids.length){ TEACH.index=(TEACH.index-1+TEACH.ids.length)%TEACH.ids.length; renderCard(); } }
 function shuffleEq(){ for(let i=TEACH.ids.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [TEACH.ids[i],TEACH.ids[j]]=[TEACH.ids[j],TEACH.ids[i]]; } TEACH.index=0; renderCard(); }
-function refreshMaskButton(){ btnMask.textContent = TEACH.masked ? 'Hide Balancing Numbers' : 'Show Balancing Numbers'; }
+function refreshMaskButton(){
+  // If masked (hidden), offer to SHOW numbers; if shown, offer to HIDE.
+  btnMask.textContent = TEACH.masked
+    ? 'Show Balancing Numbers'
+    : 'Hide Balancing Numbers';
+}
+
 function toggleMask(){ TEACH.masked=!TEACH.masked; refreshMaskButton(); renderCardFromBoxesOrCurrent(); }
 
 function loadToBoxes(){
@@ -278,7 +310,7 @@ function eqFromBoxes(){
 function renderCardFromBoxesOrCurrent(){
   const cur=currentEq(); if(cur){ renderCard(); return; }
   const tmp=eqFromBoxes(); if(!tmp){ eqText.textContent='—'; eqTags.innerHTML=''; return; }
-  eqText.textContent = TEACH.masked ? maskEqText(tmp) : unmaskedEqText(tmp);
+  eqText.textContent = TEACH.masked ? maskEqText(tmp) : balancedEqText(tmp);
   eqTags.innerHTML   = `<span class="badge">Custom</span>`;
 }
 
