@@ -18,7 +18,13 @@ function openIon(target){
 }
 function closeIon(){
   ionModal.setAttribute('aria-hidden','true');
+  $('#ionCation').value = '';
+  $('#ionAnion').value = '';
+  ionPrev.textContent = '—';
+  ionPrev.dataset.formula = '';
+  updateIonButtons();
 }
+
 
 btnIonR?.addEventListener('click', ()=> openIon('reactants'));
 btnIonP?.addEventListener('click', ()=> openIon('products'));
