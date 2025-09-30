@@ -86,3 +86,5 @@ button.small{ padding:8px 10px; font-weight:600; border-style:solid; }
 .practice-q{ padding:8px 10px; background:#f8fafc; border:1px solid var(--border); border-radius:10px; min-height:32px; }
 .practice-a{ margin-top:6px; padding:8px 10px; background:#eef2ff; border:1px solid #c7d2fe; border-radius:10px; }
 .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+sup { font-size: .7em; vertical-align: super; }
+sub { font-size: .7em; vertical-align: sub; }
