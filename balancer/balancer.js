@@ -114,6 +114,12 @@ document.getElementById('loadExample').addEventListener('click', () => {
   const ex = EXAMPLES.find(e => e.id === id);
   if(!ex) return;
 
+document.getElementById('exampleSelect')?.addEventListener('change', (e)=>{
+  const id = e.target.value;
+  if(id) loadExampleById(id);  // auto-populate immediately
+});
+
+  
 // Load a chosen example into the boxes; also sync Teacher Mode if on
 function loadExampleById(id){
   const ex = EXAMPLES.find(e => e.id === id);
@@ -251,7 +257,26 @@ function loadToBoxes(){
   writeBoxes('#products',  eq.products ||[]);
   $('#tallies').innerHTML = ''; $('#result').textContent='—'; $('#status').textContent='—';
 }
+function eqFromBoxes(){
+  const r = Array.from(document.querySelectorAll('#reactants .species'))
+           .map(i=>i.value.trim()).filter(Boolean);
+  const p = Array.from(document.querySelectorAll('#products .species'))
+           .map(i=>i.value.trim()).filter(Boolean);
+  if(!r.length && !p.length) return null;
+  return { reactants:r, products:p, level:['—'], topic:'custom', difficulty:'custom' };
+}
 
+function renderCardFromBoxesOrCurrent(){
+  const cur = currentEq();
+  if(cur){ renderCard(); return; }
+  const tmp = eqFromBoxes();
+  if(!tmp){ eqText.textContent = '—'; eqTags.innerHTML=''; return; }
+  eqText.textContent = TEACH.masked ? maskEqText(tmp) : unmaskedEqText(tmp);
+  eqTags.innerHTML = `<span class="badge">Custom</span>`;
+}
+
+
+  
 // Toggle Teacher Mode on/off
 teacherToggle?.addEventListener('change', () => {
   TEACH.on = teacherToggle.checked;
@@ -274,6 +299,27 @@ btnPrev?.addEventListener('click', prevEq);
 btnShuffle?.addEventListener('click', shuffleEq);
 btnMask?.addEventListener('click', toggleMask);
 btnLoadBoxes?.addEventListener('click', loadToBoxes);
+
+
+  teacherToggle?.addEventListener('change', () => {
+  TEACH.on = teacherToggle.checked;
+  teacherBar.hidden = !TEACH.on;
+  eqCard.hidden = !TEACH.on;
+  if(TEACH.on){
+    buildSets();
+    hydrateSetSelect();
+    // show something immediately from boxes if no example is active
+    renderCardFromBoxesOrCurrent();
+    refreshMaskButton(); // from section 2 below
+  }
+});
+  
+document.addEventListener('input', (e)=>{
+  if(!TEACH.on) return;
+  if(e.target.classList?.contains('species')){
+    renderCardFromBoxesOrCurrent();
+  }
+});
 
   
   // ensure enough boxes exist
