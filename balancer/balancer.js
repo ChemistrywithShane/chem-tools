@@ -4,6 +4,28 @@ import { nullspaceVector } from "./chemistry-core/matrix.js";
 const $ = (q, el=document)=>el.querySelector(q);
 const $$ = (q, el=document)=>Array.from(el.querySelectorAll(q));
 
+// ---------- Ion Builder: modal open/close ----------
+let ionTarget = 'reactants'; // which section to insert into
+
+const ionModal  = $('#ionModal');
+const ionClose  = $('#ionClose');
+const btnIonR   = $('#openIonReactants');
+const btnIonP   = $('#openIonProducts');
+
+function openIon(target){
+  ionTarget = target;                       // 'reactants' | 'products'
+  ionModal.setAttribute('aria-hidden','false');
+}
+function closeIon(){
+  ionModal.setAttribute('aria-hidden','true');
+}
+
+btnIonR?.addEventListener('click', ()=> openIon('reactants'));
+btnIonP?.addEventListener('click', ()=> openIon('products'));
+ionClose?.addEventListener('click', closeIon);
+ionModal?.addEventListener('click', (e)=>{ if(e.target === ionModal) closeIon(); });
+
+
 // Load species for datalist autocomplete
 (async function loadSpecies(){
   try{
