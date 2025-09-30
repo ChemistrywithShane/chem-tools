@@ -98,7 +98,11 @@
 <div id="equationCard" class="equation-card" hidden>
   <div class="eq-text mono" id="eqText">—</div>
   <div class="eq-tags" id="eqTags"></div>
+  <div class="eq-actions">
+    <button id="btnVideo" class="ghost">Show video</button>
+  </div>
 </div>
+
   <!-- Hints panel (Teacher Mode) -->
 <div id="hintPanel" class="hint-panel" hidden>
   <div class="hint-actions">
@@ -109,6 +113,24 @@
   <ol id="hintList" class="hints"></ol>
 </div>
 
+  <!-- Practice panel (Teacher Mode) -->
+<div id="practicePanel" class="practice-panel" hidden>
+  <div class="practice-actions">
+    <label for="practiceType" class="sr-only">Practice Type</label>
+    <select id="practiceType">
+      <option value="mole">Mole ratio</option>
+      <option value="mass">Mass ratio</option>
+      <option value="yield">Percent yield</option>
+      <option value="atom">Atom economy</option>
+    </select>
+    <button id="genPractice">Generate</button>
+    <button id="revealPractice" class="ghost" disabled>Reveal answer</button>
+    <button id="newPractice" class="ghost" disabled>New similar</button>
+  </div>
+  <div class="practice-q mono" id="practiceQ">—</div>
+  <div class="practice-a mono" id="practiceA" hidden>—</div>
+</div>
+  
     
 </section>
 
