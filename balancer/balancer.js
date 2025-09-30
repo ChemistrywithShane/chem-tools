@@ -41,6 +41,28 @@ ionModal?.addEventListener('click', (e)=>{ if(e.target === ionModal) closeIon();
   }catch(e){ console.warn('species load failed', e); }
 })();
 
+// ---------- Ion Builder: load ions from species.json ----------
+let CATIONS = [], ANIONS = [];
+
+(async function loadIons(){
+  try{
+    const res = await fetch('./chemistry-core/species.json');
+    const all = await res.json();
+    CATIONS = all.filter(x => (x.class === 'cation' && typeof x.charge === 'number'));
+    ANIONS  = all.filter(x => (x.class === 'anion'  && typeof x.charge === 'number'));
+
+    const catSel = $('#ionCation');
+    const anSel  = $('#ionAnion');
+    if (catSel && anSel){
+      catSel.innerHTML = `<option value="">— choose a cation —</option>` +
+        CATIONS.map((c,i)=>`<option value="${i}">${c.display || c.id} (${c.charge>0?`+${c.charge}`:c.charge})</option>`).join('');
+      anSel.innerHTML = `<option value="">— choose an anion —</option>` +
+        ANIONS.map((a,i)=>`<option value="${i}">${a.display || a.id} (${a.charge})</option>`).join('');
+    }
+  }catch(e){ console.warn('ion load failed', e); }
+})();
+
+
 // ------- EXAMPLES DROPDOWN -------
 let EXAMPLES = [];
 
@@ -235,3 +257,30 @@ function buildCompound(cation, anion) {
          (anion.display.replace(/[^A-Za-z0-9()]/g,'')) +
          (nAn>1 ? nAn : '');
 }
+
+const ionCatSel = $('#ionCation');
+const ionAnSel  = $('#ionAnion');
+const ionPrev   = $('#ionPreview');
+
+ionCatSel?.addEventListener('change', updateIonPreview);
+ionAnSel?.addEventListener('change', updateIonPreview);
+
+function updateIonPreview(){
+  // Placeholder until 2C — show raw selection for now
+  const c = ionCatSel?.value !== '' ? CATIONS[Number(ionCatSel.value)] : null;
+  const a = ionAnSel?.value  !== '' ? ANIONS[Number(ionAnSel.value)]  : null;
+  if(!c || !a){ ionPrev.textContent = '—'; return; }
+  ionPrev.textContent = (c.display || c.id) + ' + ' + (a.display || a.id);
+}
+
+const btnAddR = $('#ionInsertReactant');
+const btnAddP = $('#ionInsertProduct');
+
+function updateIonButtons(){
+  const ready = ionCatSel?.value !== '' && ionAnSel?.value !== '';
+  btnAddR?.toggleAttribute('disabled', !ready);
+  btnAddP?.toggleAttribute('disabled', !ready);
+}
+ionCatSel?.addEventListener('change', updateIonButtons);
+ionAnSel?.addEventListener('change', updateIonButtons);
+updateIonButtons();
