@@ -114,6 +114,136 @@ document.getElementById('loadExample').addEventListener('click', () => {
   const ex = EXAMPLES.find(e => e.id === id);
   if(!ex) return;
 
+  // ---------- TEACHER MODE ----------
+const TEACH = {
+  on:false, sets:new Map(), ids:[], index:0, masked:true, current:null
+};
+
+const teacherToggle = $('#teacherMode');
+const teacherBar    = $('#teacherBar');
+const setSelect     = $('#setSelect');
+const diffSelect    = $('#diffSelect');
+const btnPrev       = $('#prevEq');
+const btnNext       = $('#nextEq');
+const btnShuffle    = $('#shuffleEq');
+const btnMask       = $('#toggleMask');
+const btnLoadBoxes  = $('#loadToBoxes');
+const eqCard        = $('#equationCard');
+const eqText        = $('#eqText');
+const eqTags        = $('#eqTags');
+
+// Build sets map from EXAMPLES once examples load
+function buildSets(){
+  const m = new Map(); // key = "Level::topic" -> [ids]
+  EXAMPLES.forEach(e=>{
+    (e.level||[]).forEach(lvl=>{
+      const key = `${lvl}::${e.topic||'misc'}`;
+      if(!m.has(key)) m.set(key, []);
+      m.get(key).push(e.id);
+    });
+  });
+  TEACH.sets = m;
+}
+
+function hydrateSetSelect(){
+  const opts = [];
+  TEACH.sets.forEach((ids,key)=>{
+    const [lvl,topic] = key.split('::');
+    opts.push({key, label:`${lvl} ▸ ${prettyLabel(topic)} (${ids.length})`});
+  });
+  opts.sort((a,b)=>a.label.localeCompare(b.label));
+  setSelect.innerHTML = opts.map(o=>`<option value="${o.key}">${o.label}</option>`).join('') || `<option value="">(no sets)</option>`;
+}
+
+function selectSet(key, difficulty='ALL'){
+  const ids = TEACH.sets.get(key) || [];
+  TEACH.ids = ids.filter(id=>{
+    const eq = EXAMPLES.find(x=>x.id===id);
+    return difficulty==='ALL' || (eq?.difficulty||'core')===difficulty;
+  });
+  TEACH.index = 0;
+  renderCard();
+}
+
+function currentEq(){
+  const id = TEACH.ids[TEACH.index];
+  return EXAMPLES.find(x=>x.id===id) || null;
+}
+
+function maskEqText(eq){
+  // show □ placeholders before each species (projector-friendly)
+  const L = (eq.reactants||[]).map(s => `□ ${s}`).join('  +  ');
+  const R = (eq.products ||[]).map(s => `□ ${s}`).join('  +  ');
+  return `${L}  →  ${R}`;
+}
+
+function unmaskedEqText(eq){
+  // Optionally, later, run solver to print coefficients.
+  // For MVP we just show plain species without □.
+  const L = (eq.reactants||[]).join('  +  ');
+  const R = (eq.products ||[]).join('  +  ');
+  return `${L}  →  ${R}`;
+}
+
+function renderCard(){
+  const eq = currentEq();
+  if(!eq || TEACH.ids.length===0){
+    eqText.textContent = '—';
+    eqTags.innerHTML = '';
+    return;
+  }
+  eqText.textContent = TEACH.masked ? maskEqText(eq) : unmaskedEqText(eq);
+  eqTags.innerHTML = `
+    <span class="badge">${(eq.level||[]).join(', ')||'—'}</span>
+    <span class="badge">${prettyLabel(eq.topic||'misc')}</span>
+    <span class="badge">${(eq.difficulty||'core')}</span>
+  `;
+}
+
+function nextEq(){ if(TEACH.ids.length){ TEACH.index = (TEACH.index+1)%TEACH.ids.length; renderCard(); } }
+function prevEq(){ if(TEACH.ids.length){ TEACH.index = (TEACH.index-1+TEACH.ids.length)%TEACH.ids.length; renderCard(); } }
+function shuffleEq(){
+  for(let i=TEACH.ids.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [TEACH.ids[i],TEACH.ids[j]]=[TEACH.ids[j],TEACH.ids[i]]; }
+  TEACH.index = 0; renderCard();
+}
+function toggleMask(){
+  TEACH.masked = !TEACH.masked;
+  btnMask.textContent = TEACH.masked ? 'Hide coefficients' : 'Show coefficients';
+  renderCard();
+}
+function loadToBoxes(){
+  const eq = currentEq(); if(!eq) return;
+  ensureBoxes('#reactants', (eq.reactants||[]).length);
+  ensureBoxes('#products',  (eq.products ||[]).length);
+  writeBoxes('#reactants', eq.reactants||[]);
+  writeBoxes('#products',  eq.products ||[]);
+  $('#tallies').innerHTML = ''; $('#result').textContent='—'; $('#status').textContent='—';
+}
+
+// Toggle Teacher Mode on/off
+teacherToggle?.addEventListener('change', () => {
+  TEACH.on = teacherToggle.checked;
+  teacherBar.hidden = !TEACH.on;
+  eqCard.hidden = !TEACH.on;
+  if(TEACH.on){
+    buildSets();
+    hydrateSetSelect();
+    // default: first available set
+    const firstKey = setSelect.value || Array.from(TEACH.sets.keys())[0];
+    if(firstKey){ selectSet(firstKey, diffSelect.value); }
+  }
+});
+
+// Events
+setSelect?.addEventListener('change', ()=> selectSet(setSelect.value, diffSelect.value));
+diffSelect?.addEventListener('change', ()=> selectSet(setSelect.value, diffSelect.value));
+btnNext?.addEventListener('click', nextEq);
+btnPrev?.addEventListener('click', prevEq);
+btnShuffle?.addEventListener('click', shuffleEq);
+btnMask?.addEventListener('click', toggleMask);
+btnLoadBoxes?.addEventListener('click', loadToBoxes);
+
+  
   // ensure enough boxes exist
   ensureBoxes('#reactants', ex.reactants.length);
   ensureBoxes('#products', ex.products.length);
