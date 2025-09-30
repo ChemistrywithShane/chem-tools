@@ -295,8 +295,6 @@ function balancedEqText(eq){
     return unmaskedEqText(eq);
   }
 }
-
-}
 function getHintsForEq(eq){
   // Prefer explicit hint_steps from data
   const steps = Array.isArray(eq?.hint_steps) ? eq.hint_steps.slice() : [];
