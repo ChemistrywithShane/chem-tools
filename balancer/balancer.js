@@ -279,6 +279,26 @@ function updateIonPreview(){
   const a = ionAnSel?.value  !== '' ? ANIONS[Number(ionAnSel.value)]  : null;
   if(!c || !a){ ionPrev.textContent = '—'; updateIonButtons(); return; }
 
+btnAddR?.addEventListener('click', () => insertIonFormula('reactants'));
+btnAddP?.addEventListener('click', () => insertIonFormula('products'));
+
+function insertIonFormula(target){
+  const f = ionPrev.dataset.formula;
+  if(!f) return;
+
+  // Ensure enough boxes
+  ensureBoxes('#'+target, 1);
+
+  // Find the first empty species input in that section
+  const inputs = Array.from(document.querySelectorAll('#'+target+' .species'));
+  const empty = inputs.find(i => !i.value.trim());
+  if(empty) empty.value = f;
+  else inputs[inputs.length-1].value = f; // fallback: overwrite last box
+
+  closeIon();
+}
+
+  
   // Helpers
   const cleanBase = (ion) => {
     // prefer explicit formula field if you add one later
