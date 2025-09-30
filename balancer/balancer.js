@@ -211,6 +211,16 @@ const hintList  = $('#hintList');
 const btnHintN  = $('#hintNext');
 const btnHintAll= $('#hintAll');
 const btnHintR  = $('#hintReset');
+// ---------- Practice elements ----------
+const practicePanel = $('#practicePanel');
+const practiceType  = $('#practiceType');
+const btnGen        = $('#genPractice');
+const btnReveal     = $('#revealPractice');
+const btnNew        = $('#newPractice');
+const practiceQ     = $('#practiceQ');
+const practiceA     = $('#practiceA');
+
+TEACH.practice = { type:'mole', current:null }; // store current generated item
 
 // keep hint progress in TEACH
 TEACH.hIndex = 0;   // number of hints currently revealed
@@ -333,6 +343,15 @@ function renderHints(){
   btnHintR.disabled   = TEACH.hIndex === 0;
 }
 
+function resetPractice(){
+  TEACH.practice.current = null;
+  practiceQ.textContent = '—';
+  practiceA.textContent = '—';
+  practiceA.hidden = true;
+  btnReveal.disabled = true;
+  btnNew.disabled = true;
+}
+
 
 function renderCard(){
   const eq=currentEq();
@@ -343,6 +362,7 @@ function renderCard(){
     <span class="badge">${prettyLabel(eq.topic||'misc')}</span>
     <span class="badge">${(eq.difficulty||'core')}</span>`;
 resetHints(eq);
+   resetPractice();
 }
 
 function nextEq(){ if(TEACH.ids.length){ TEACH.index=(TEACH.index+1)%TEACH.ids.length; renderCard(); } }
@@ -378,13 +398,120 @@ function renderCardFromBoxesOrCurrent(){
   eqText.textContent = TEACH.masked ? maskEqText(tmp) : balancedEqText(tmp);
   eqTags.innerHTML   = `<span class="badge">Custom</span>`;
 resetHints(tmp);
+   resetPractice();
 }
+function getStoich(eq){
+  return eq?.stoich || { mole_ratios:[], mass_ratios:[], yield_questions:[], atom_economy:false };
+}
+
+function genMolePractice(eq){
+  const s = getStoich(eq);
+  const item = choice(s.mole_ratios || []);
+  if(!item) return { q:'No mole-ratio items for this equation yet.', a:'' };
+
+  const given = item.given; const ask = item.ask;
+  // Build a balanced vector to get stoich coefficients
+  const { A } = buildMatrixFromReaction(eq.reactants||[], eq.products||[], false);
+  const v = nullspaceVector(A);
+  const all = [...(eq.reactants||[]), ...(eq.products||[])];
+  const coeff = Object.fromEntries(all.map((sp,i)=>[sp, v[i]]));
+
+  const ratio = coeff[ask.species] / coeff[given.species];
+  const molesAns = given.moles * ratio;
+
+  return {
+    q: `If you have ${given.moles} mol of ${given.species}, how many moles of ${ask.species} are produced/required?`,
+    a: `${roundSig(molesAns)} mol (ratio ${coeff[given.species]}:${coeff[ask.species]} from the balanced equation)`
+  };
+}
+
+function genMassPractice(eq){
+  const s = getStoich(eq);
+  const item = choice(s.mass_ratios || []);
+  if(!item) return { q:'No mass-ratio items for this equation yet.', a:'' };
+
+  const given = item.given; const ask = item.ask;
+  const { A } = buildMatrixFromReaction(eq.reactants||[], eq.products||[], false);
+  const v = nullspaceVector(A);
+  const all = [...(eq.reactants||[]), ...(eq.products||[])];
+  const coeff = Object.fromEntries(all.map((sp,i)=>[sp, v[i]]));
+
+  const mmGiven = molarMass(given.species);
+  const mmAsk   = molarMass(ask.species);
+
+  const nGiven  = given.mass_g / mmGiven;
+  const ratio   = coeff[ask.species] / coeff[given.species];
+  const nAsk    = nGiven * ratio;
+  const massAsk = nAsk * mmAsk;
+
+  return {
+    q: `If you start with ${given.mass_g} g of ${given.species}, what mass of ${ask.species} is formed/required?`,
+    a: `${roundSig(massAsk)} g  (molar masses: ${ask.species} ${roundSig(mmAsk)} g·mol⁻¹, ${given.species} ${roundSig(mmGiven)} g·mol⁻¹; stoich ${coeff[given.species]}:${coeff[ask.species]})`
+  };
+}
+
+function genYieldPractice(eq){
+  const s = getStoich(eq);
+  const item = choice(s.yield_questions || []);
+  if(!item) return { q:'No yield items for this equation yet.', a:'' };
+
+  const given = item.given; const ask = item.ask;
+  const { A } = buildMatrixFromReaction(eq.reactants||[], eq.products||[], false);
+  const v = nullspaceVector(A);
+  const all = [...(eq.reactants||[]), ...(eq.products||[])];
+  const coeff = Object.fromEntries(all.map((sp,i)=>[sp, v[i]]));
+
+  const mmGiven = molarMass(given.species);
+  const mmAsk   = molarMass(ask.species);
+  const nGiven  = (given.mass_g ?? 0) / mmGiven || given.moles || 0;
+  const ratio   = coeff[ask.species] / coeff[given.species];
+  const nTheo   = nGiven * ratio;
+  const mTheo   = nTheo * mmAsk;
+
+  const expected = item.expected_yield_percent ?? 100;
+  const mActual  = mTheo * (expected/100);
+
+  return {
+    q: `You react ${given.mass_g ?? (given.moles+' mol')} of ${given.species}. What is the theoretical mass of ${ask.species}? If the actual yield is ${expected}% what mass would you collect?`,
+    a: `Theoretical: ${roundSig(mTheo)} g.  At ${expected}% yield: ${roundSig(mActual)} g.`
+  };
+}
+
+function genAtomEconomyPractice(eq){
+  const s = getStoich(eq);
+  if(!s.atom_economy) return { q:'Atom economy not flagged for this reaction.', a:'' };
+
+  // Define desired product as "the first product" by default
+  const desired = (eq.products||[])[0];
+  if(!desired) return { q:'No products array found.', a:'' };
+
+  // Mass of desired from coefficients; total mass of all products
+  const { A } = buildMatrixFromReaction(eq.reactants||[], eq.products||[], false);
+  const v = nullspaceVector(A);
+  const leftLen = (eq.reactants||[]).length;
+  let mDesired = 0, mTotal = 0;
+  (eq.products||[]).forEach((p,i)=>{
+    const n = v[leftLen+i];
+    const mm = molarMass(p);
+    const mass = n*mm;
+    mTotal += mass;
+    if(p === desired) mDesired += mass;
+  });
+  const pct = 100 * (mDesired / mTotal);
+  return {
+    q: `Calculate the atom economy for producing ${desired} in this reaction.`,
+    a: `Atom economy = (mass of desired products ÷ total mass of products) × 100 = ${roundSig(pct)}%.`
+  };
+}
+
+
 
 teacherToggle?.addEventListener('change', ()=>{
   TEACH.on = teacherToggle.checked;
   teacherBar.hidden = !TEACH.on;
   eqCard.hidden     = !TEACH.on;
   hintPanel.hidden = !TEACH.on;
+  practicePanel.hidden = !TEACH.on;
    if(TEACH.on){
     buildSets(); hydrateSetSelect();
     renderCardFromBoxesOrCurrent();
@@ -407,6 +534,62 @@ document.addEventListener('input', e=>{
   if(!TEACH.on) return;
   if(e.target.classList?.contains('species')) renderCardFromBoxesOrCurrent();
 });
+
+practiceType?.addEventListener('change', ()=>{
+  TEACH.practice.type = practiceType.value;
+  resetPractice();
+});
+
+btnGen?.addEventListener('click', ()=>{
+  const eq = currentEq() || eqFromBoxes();
+  if(!eq){ practiceQ.textContent = 'No equation selected.'; return; }
+
+  let out = { q:'', a:'' };
+  try{
+    switch(practiceType.value){
+      case 'mole':  out = genMolePractice(eq); break;
+      case 'mass':  out = genMassPractice(eq); break;
+      case 'yield': out = genYieldPractice(eq); break;
+      case 'atom':  out = genAtomEconomyPractice(eq); break;
+    }
+  }catch(e){
+    console.warn('Practice error:', e);
+    out = { q:'Cannot generate for this equation (missing masses?)', a:String(e.message||e) };
+  }
+
+  TEACH.practice.current = out;
+  practiceQ.textContent = out.q || '—';
+  practiceA.textContent = out.a || '—';
+  practiceA.hidden = true;
+  btnReveal.disabled = !out.a;
+  btnNew.disabled = !out.q;
+});
+
+btnReveal?.addEventListener('click', ()=>{
+  practiceA.hidden = false;
+});
+
+btnNew?.addEventListener('click', ()=>{
+  // Generate again with same type
+  btnGen.click();
+});
+
+
+$('#btnVideo')?.addEventListener('click', ()=>{
+  const eq = currentEq() || eqFromBoxes();
+  if(!eq || !Array.isArray(eq.media?.video_queries) || eq.media.video_queries.length===0){
+    window.open('https://www.youtube.com/results?search_query=chemistry+reaction+demonstration', '_blank');
+    return;
+  }
+
+   
+  // Prefer the equation's first query
+  const q = eq.media.video_queries[0];
+  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`;
+  window.open(url, '_blank');
+});
+
+
 
 /* ------------------------------------------------
    UI helpers (boxes, labels)
@@ -505,3 +688,26 @@ function renderTallies(reactants, products, coeffs, includeCharge){
     wrap.appendChild(line);
   });
 }
+// ---------- Simple molar-mass table (extend anytime) ----------
+const ATOMIC_MASS = {
+  H:1.008, He:4.003, Li:6.941, Be:9.012, B:10.81, C:12.011, N:14.007, O:15.999, F:18.998, Ne:20.180,
+  Na:22.990, Mg:24.305, Al:26.982, Si:28.086, P:30.974, S:32.065, Cl:35.453, Ar:39.948, K:39.098, Ca:40.078,
+  Sc:44.956, Ti:47.867, V:50.942, Cr:51.996, Mn:54.938, Fe:55.845, Co:58.933, Ni:58.693, Cu:63.546, Zn:65.38,
+  Ga:69.723, Ge:72.630, As:74.922, Se:78.971, Br:79.904, Kr:83.798, Rb:85.468, Sr:87.62, Y:88.906, Zr:91.224,
+  Ag:107.868, I:126.904, Ba:137.327, Cs:132.905
+};
+
+function molarMass(formula){
+  // parseFormula returns map of element -> count; ignore '(charge)'
+  const m = parseFormula(formula);
+  let total = 0;
+  for(const el in m){
+    if(el === '(charge)') continue;
+    if(!ATOMIC_MASS[el]) throw new Error(`No atomic mass for ${el}`);
+    total += ATOMIC_MASS[el] * m[el];
+  }
+  return total; // g/mol
+}
+
+function roundSig(x, s=3){ if(!isFinite(x)) return x; const p = Math.pow(10, Math.max(0, s-1-Math.floor(Math.log10(Math.abs(x))))); return Math.round(x*p)/p; }
+function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
