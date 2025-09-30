@@ -15,4 +15,14 @@
   {"id":"formation_iron_oxide","level":["GCSE"],"topic":"oxidation","reactants":["Fe","O2"],"products":["Fe2O3"]},
 
   {"id":"kmno4_heat","level":["ALevel"],"topic":"redox","reactants":["KMnO4"],"products":["K2MnO4","MnO2","O2"]}
+
+  {
+  "id":"neutralisation_hno3_naoh","level":["GCSE"],"topic":"neutralisation",
+  "reactants":["HNO3","NaOH"],"products":["NaNO3","H2O"]
+},
+{
+  "id":"alum_hydrate","level":["ALevel"],"topic":"hydrates",
+  "reactants":["Al2(SO4)3·18H2O"],"products":["Al2(SO4)3","H2O"]
+}
+
 ]
