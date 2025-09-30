@@ -26,3 +26,8 @@ button.ghost{background:#fff;border-style:dashed}
 .foot{color:var(--muted);text-align:center;padding:16px}
 .tiny-clear{ font-size:12px; margin-left:8px; color:var(--muted); text-decoration:none; border:1px dashed var(--border); padding:2px 6px; border-radius:8px}
 .tiny-clear:hover{ color:#111; background:#f3f4f6 }
+.examples-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.examples-row label{display:flex;flex-direction:column;gap:4px;font-weight:600}
+.examples-row select{padding:10px;border:1px solid var(--border);border-radius:10px;background:#fff}
+.examples-row button{padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;font-weight:700;cursor:pointer}
+.examples-row button:hover{background:#f8fafc}
