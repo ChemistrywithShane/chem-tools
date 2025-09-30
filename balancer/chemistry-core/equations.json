@@ -343,7 +343,7 @@
   /* ---------- REDOX / TITRATIONS ---------- */
   {
     "id": "redox_mno4_fe2_acidic",
-    "level": ["ALevel"],
+    "level": ["A Level"],
     "topic": "redox",
     "difficulty": "core",
     "reactants": ["MnO4^-", "Fe^2+", "H^+"],
@@ -365,7 +365,7 @@
   },
   {
     "id": "redox_dichromate_fe2_acidic",
-    "level": ["ALevel"],
+    "level": ["A Level"],
     "topic": "redox",
     "difficulty": "core",
     "reactants": ["Cr2O7^2-", "Fe^2+", "H^+"],
@@ -387,7 +387,7 @@
   },
   {
     "id": "iodine_thiosulfate",
-    "level": ["ALevel"],
+    "level": ["A Level"],
     "topic": "redox",
     "difficulty": "core",
     "reactants": ["I2", "S2O3^2-"],
@@ -453,7 +453,7 @@
   },
   {
     "id": "contact_so2_to_so3_overall",
-    "level": ["ALevel"],
+    "level": ["A Level"],
     "topic": "industrial",
     "difficulty": "core",
     "reactants": ["SO2", "O2"],
