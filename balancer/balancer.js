@@ -205,6 +205,16 @@ const btnLoadBoxes  = $('#loadToBoxes');
 const eqCard        = $('#equationCard');
 const eqText        = $('#eqText');
 const eqTags        = $('#eqTags');
+// ---------- Hints (Teacher Mode) ----------
+const hintPanel = $('#hintPanel');
+const hintList  = $('#hintList');
+const btnHintN  = $('#hintNext');
+const btnHintAll= $('#hintAll');
+const btnHintR  = $('#hintReset');
+
+// keep hint progress in TEACH
+TEACH.hIndex = 0;   // number of hints currently revealed
+TEACH.hCache = [];  // current equation's hints
 
 function buildSets(){
   const m = new Map();
