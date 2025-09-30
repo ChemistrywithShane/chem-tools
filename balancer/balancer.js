@@ -274,22 +274,41 @@ function unmaskedEqText(eq){
   const R=(eq.products ||[]).map(s=>formatFormulaForDisplay(s)).join('  +  ');
   return `${L}  →  ${R}`;
 }
+
+// Detect if any species carries charge in the equation
+function hasCharges(eq){
+  const all = [...(eq?.reactants || []), ...(eq?.products || [])];
+  for(const s of all){
+    try{
+      const m = parseFormula(s);
+      if ((m['(charge)'] || 0) !== 0) return true;
+    }catch(e){}
+  }
+  return false;
+}
 function balancedEqText(eq){
   try{
-    const charge = $('#chargeToggle')?.checked || false;
-    const { A } = buildMatrixFromReaction(eq.reactants || [], eq.products || [], charge);
+    const toggleOn   = $('#chargeToggle')?.checked || false;
+    const needCharge = hasCharges(eq);
+    const useCharge  = toggleOn || needCharge;
+
+    const { A } = buildMatrixFromReaction(eq.reactants || [], eq.products || [], useCharge);
     const v = nullspaceVector(A);
     if(!v || !v.length) return unmaskedEqText(eq);
 
     const leftLen = (eq.reactants || []).length;
-    const left = (eq.reactants || []).map((s,i) =>
-      (v[i] === 1 ? '' : v[i] + ' ') + formatFormulaForDisplay(s)
-    ).join('  +  ');
-    const right = (eq.products || []).map((s,i) =>
-      (v[leftLen + i] === 1 ? '' : v[leftLen + i] + ' ') + formatFormulaForDisplay(s)
-    ).join('  +  ');
 
-    return `${left}  →  ${right}`;
+    const leftParts = (eq.reactants || [])
+      .map((s,i) => ({ s, c: v[i] }))
+      .filter(x => x.c !== 0)
+      .map(x => (x.c === 1 ? '' : x.c + ' ') + formatFormulaForDisplay(x.s));
+
+    const rightParts = (eq.products || [])
+      .map((s,i) => ({ s, c: v[leftLen + i] }))
+      .filter(x => x.c !== 0)
+      .map(x => (x.c === 1 ? '' : x.c + ' ') + formatFormulaForDisplay(x.s));
+
+    return `${leftParts.join('  +  ')}  →  ${rightParts.join('  +  ')}`;
   }catch(e){
     console.warn('balancedEqText failed:', e);
     return unmaskedEqText(eq);
@@ -665,8 +684,16 @@ $('#clear-products').onclick = ()=>{
 function getSpeciesFrom(selector){ return $$(selector+' .species').map(i=>i.value.trim()).filter(Boolean); }
 
 function prettyReaction(eq, coeffs, leftLen){
-  const L = eq.slice(0,leftLen).map((s,i)=> (coeffs[i]===1?'':coeffs[i]+' ') + formatFormulaForDisplay(s)).join(' + ');
-  const R = eq.slice(leftLen).map((s,i)=> (coeffs[leftLen+i]===1?'':coeffs[leftLen+i]+' ') + formatFormulaForDisplay(s)).join(' + ');
+  const L = eq.slice(0,leftLen)
+    .map((s,i)=>({ s, c: coeffs[i] }))
+    .filter(x => x.c !== 0)
+    .map(x => (x.c===1?'':x.c+' ') + formatFormulaForDisplay(x.s))
+    .join(' + ');
+  const R = eq.slice(leftLen)
+    .map((s,i)=>({ s, c: coeffs[leftLen+i] }))
+    .filter(x => x.c !== 0)
+    .map(x => (x.c===1?'':x.c+' ') + formatFormulaForDisplay(x.s))
+    .join(' + ');
   return L + ' → ' + R;
 }
 
