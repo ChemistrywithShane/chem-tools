@@ -82,7 +82,7 @@
     "media": { "video_queries": ["propane combustion demo candle vs bunsen"] }
   },
 
-  /* ---------- NEUTRALISATION ---------- */
+  
   {
     "id": "neutralisation_hcl_naoh",
     "level": ["GCSE"],
@@ -162,7 +162,7 @@
     "media": { "video_queries": ["GCSE neutralisation strong acid strong base demo"] }
   },
 
-  /* ---------- PRECIPITATION ---------- */
+
   {
     "id": "precipitation_agcl",
     "level": ["GCSE"],
@@ -215,7 +215,7 @@
     "media": { "video_queries": ["barium sulfate precipitation test for sulfate ion"] }
   },
 
-  /* ---------- DISPLACEMENT ---------- */
+
   {
     "id": "displacement_zn_cuso4",
     "level": ["GCSE"],
@@ -267,7 +267,7 @@
     "media": { "video_queries": ["iron nail copper sulfate displacement reaction"] }
   },
 
-  /* ---------- THERMAL DECOMPOSITION ---------- */
+ 
   {
     "id": "thermal_decomp_caco3",
     "level": ["GCSE"],
@@ -316,7 +316,7 @@
     "media": { "video_queries": ["decomposition of potassium chlorate oxygen production"] }
   },
 
-  /* ---------- HYDRATES ---------- */
+ 
   {
     "id": "copper_ii_sulfate_pentahydrate",
     "level": ["GCSE", "ALevel"],
@@ -340,7 +340,7 @@
     "media": { "video_queries": ["copper sulfate pentahydrate dehydration heating"] }
   },
 
-  /* ---------- REDOX / TITRATIONS ---------- */
+
   {
     "id": "redox_mno4_fe2_acidic",
     "level": ["A Level"],
@@ -407,7 +407,7 @@
     "media": { "video_queries": ["iodine thiosulfate titration starch endpoint blue"] }
   },
 
-  /* ---------- ELECTROLYSIS ---------- */
+  
   {
     "id": "electrolysis_na_cl_molten_overall",
     "level": ["GCSE"],
@@ -429,7 +429,7 @@
     "media": { "video_queries": ["electrolysis molten sodium chloride demo"] }
   },
 
-  /* ---------- INDUSTRIAL ---------- */
+
   {
     "id": "haber_ammonia_overall",
     "level": ["GCSE", "ALevel"],
@@ -473,7 +473,7 @@
     "media": { "video_queries": ["contact process SO2 to SO3 vanadium v oxide catalyst"] }
   },
 
-  /* ---------- DEMO / HOOKS ---------- */
+ 
   {
     "id": "thermite_fe2o3_al",
     "level": ["GCSE", "ALevel"],
