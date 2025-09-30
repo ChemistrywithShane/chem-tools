@@ -114,6 +114,38 @@ document.getElementById('loadExample').addEventListener('click', () => {
   const ex = EXAMPLES.find(e => e.id === id);
   if(!ex) return;
 
+// Load a chosen example into the boxes; also sync Teacher Mode if on
+function loadExampleById(id){
+  const ex = EXAMPLES.find(e => e.id === id);
+  if(!ex) return;
+
+  // ensure enough boxes & write values
+  ensureBoxes('#reactants', (ex.reactants||[]).length);
+  ensureBoxes('#products',  (ex.products ||[]).length);
+  writeBoxes('#reactants', ex.reactants||[]);
+  writeBoxes('#products',  ex.products ||[]);
+  $('#tallies').innerHTML = ''; $('#result').textContent='—'; $('#status').textContent='—';
+
+  // if Teacher Mode is on, show the card and point it at this example
+  if (TEACH.on){
+    if(TEACH.sets.size === 0){ buildSets(); hydrateSetSelect(); }
+    const lvl  = (ex.level && ex.level[0]) || 'GCSE';
+    const key  = `${lvl}::${ex.topic||'misc'}`;
+    if (TEACH.sets.has(key)) {
+      setSelect.value = key;
+      selectSet(key, diffSelect.value);
+      const idx = TEACH.ids.indexOf(ex.id);
+      if(idx >= 0) TEACH.index = idx;
+      renderCard();
+    } else {
+      // fallback: render from current boxes
+      renderCardFromBoxesOrCurrent();
+    }
+    eqCard.hidden = false;
+  }
+}
+
+  
   // ---------- TEACHER MODE ----------
 const TEACH = {
   on:false, sets:new Map(), ids:[], index:0, masked:true, current:null
