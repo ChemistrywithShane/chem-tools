@@ -1,5 +1,4 @@
 [
-  /* ---------- COMBUSTION (GCSE) ---------- */
   {
     "id": "combust_methane",
     "level": ["GCSE"],
@@ -9,13 +8,24 @@
     "products": ["CO2", "H2O"],
     "hint_steps": [
       "Combustion → products are CO2 and H2O.",
-      "Balance C first → 1 CO2.",
-      "Balance H next → 2 H2O.",
-      "Balance O last → needs 2 O2."
+      "Balance carbon first: 1 CO2.",
+      "Balance hydrogen next: 2 H2O.",
+      "Balance oxygen last: requires 2 O2."
     ],
     "tags": ["complete_combustion"],
     "source": "AQA-8462",
-    "notes": "Classic GCSE balancing pattern: C, H, then O."
+    "notes": "Classic GCSE balancing pattern: C, H, then O.",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "CH4", "moles": 1 }, "ask": { "species": "CO2" } },
+        { "given": { "species": "O2", "moles": 2 }, "ask": { "species": "H2O" } }
+      ],
+      "mass_ratios": [
+        { "given": { "species": "CH4", "mass_g": 16.0 }, "ask": { "species": "H2O" } }
+      ],
+      "atom_economy": false
+    },
+    "media": { "video_queries": ["methane combustion bunsen burner demonstration"] }
   },
   {
     "id": "combust_ethanol",
@@ -28,10 +38,21 @@
       "Write CO2 and H2O as products.",
       "Balance C → 2 CO2.",
       "Balance H → 3 H2O.",
-      "Balance O last (count total O in products) → needs 3 O2."
+      "Balance O last (count total O in products) → 3 O2."
     ],
     "tags": ["complete_combustion"],
-    "source": "AQA-8462"
+    "source": "AQA-8462",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "C2H5OH", "moles": 1 }, "ask": { "species": "CO2" } },
+        { "given": { "species": "O2", "moles": 3 }, "ask": { "species": "H2O" } }
+      ],
+      "mass_ratios": [
+        { "given": { "species": "C2H5OH", "mass_g": 46.07 }, "ask": { "species": "CO2" } }
+      ],
+      "atom_economy": false
+    },
+    "media": { "video_queries": ["ethanol combustion demonstration clean blue flame"] }
   },
   {
     "id": "combust_propane",
@@ -47,10 +68,21 @@
       "Balance O last → requires 5 O2."
     ],
     "tags": ["complete_combustion"],
-    "source": "AQA-8462"
+    "source": "AQA-8462",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "C3H8", "moles": 1 }, "ask": { "species": "CO2" } },
+        { "given": { "species": "O2", "moles": 5 }, "ask": { "species": "H2O" } }
+      ],
+      "mass_ratios": [
+        { "given": { "species": "C3H8", "mass_g": 44.10 }, "ask": { "species": "CO2" } }
+      ],
+      "atom_economy": false
+    },
+    "media": { "video_queries": ["propane combustion demo candle vs bunsen"] }
   },
 
-  /* ---------- NEUTRALISATION (GCSE) ---------- */
+  /* ---------- NEUTRALISATION ---------- */
   {
     "id": "neutralisation_hcl_naoh",
     "level": ["GCSE"],
@@ -62,10 +94,20 @@
       "Acid + alkali → salt + water.",
       "H+ and OH- form H2O.",
       "Na+ with Cl- forms NaCl.",
-      "All 1:1:1:1"
+      "All 1:1:1:1."
     ],
     "tags": ["titration_intro"],
-    "source": "AQA-8462"
+    "source": "AQA-8462",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "HCl", "moles": 0.1 }, "ask": { "species": "NaOH" } }
+      ],
+      "mass_ratios": [
+        { "given": { "species": "HCl", "mass_g": 36.5 }, "ask": { "species": "NaCl" } }
+      ],
+      "atom_economy": true
+    },
+    "media": { "video_queries": ["titration demo phenolphthalein HCl NaOH"] }
   },
   {
     "id": "neutralisation_h2so4_naoh",
@@ -81,7 +123,18 @@
       "Final check."
     ],
     "tags": ["diprotic_acid"],
-    "source": "AQA-8462"
+    "source": "AQA-8462",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "H2SO4", "moles": 1 }, "ask": { "species": "NaOH" } },
+        { "given": { "species": "NaOH", "moles": 2 }, "ask": { "species": "H2O" } }
+      ],
+      "mass_ratios": [
+        { "given": { "species": "H2SO4", "mass_g": 98 }, "ask": { "species": "Na2SO4" } }
+      ],
+      "atom_economy": true
+    },
+    "media": { "video_queries": ["strong acid base neutralisation animation"] }
   },
   {
     "id": "neutralisation_hno3_naoh",
@@ -96,10 +149,20 @@
       "Na+ + NO3- → NaNO3."
     ],
     "tags": ["titration_intro"],
-    "source": "AQA-8462"
+    "source": "AQA-8462",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "HNO3", "moles": 0.2 }, "ask": { "species": "H2O" } }
+      ],
+      "mass_ratios": [
+        { "given": { "species": "NaOH", "mass_g": 4.0 }, "ask": { "species": "NaNO3" } }
+      ],
+      "atom_economy": true
+    },
+    "media": { "video_queries": ["GCSE neutralisation strong acid strong base demo"] }
   },
 
-  /* ---------- PRECIPITATION (GCSE) ---------- */
+  /* ---------- PRECIPITATION ---------- */
   {
     "id": "precipitation_agcl",
     "level": ["GCSE"],
@@ -114,7 +177,17 @@
       "All coefficients 1."
     ],
     "tags": ["silver_halide"],
-    "source": "AQA-8462"
+    "source": "AQA-8462",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "NaCl", "moles": 0.1 }, "ask": { "species": "AgCl" } }
+      ],
+      "mass_ratios": [
+        { "given": { "species": "AgNO3", "mass_g": 16.99 }, "ask": { "species": "AgCl" } }
+      ],
+      "atom_economy": true
+    },
+    "media": { "video_queries": ["silver nitrate sodium chloride precipitation of silver chloride milky"] }
   },
   {
     "id": "precipitation_baso4",
@@ -129,10 +202,20 @@
       "Balance Na and Cl → 2 NaCl."
     ],
     "tags": ["sulfate_test"],
-    "source": "AQA-8462"
+    "source": "AQA-8462",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "Na2SO4", "moles": 0.05 }, "ask": { "species": "BaSO4" } }
+      ],
+      "mass_ratios": [
+        { "given": { "species": "BaCl2", "mass_g": 20.83 }, "ask": { "species": "BaSO4" } }
+      ],
+      "atom_economy": true
+    },
+    "media": { "video_queries": ["barium sulfate precipitation test for sulfate ion"] }
   },
 
-  /* ---------- DISPLACEMENT (GCSE) ---------- */
+  /* ---------- DISPLACEMENT ---------- */
   {
     "id": "displacement_zn_cuso4",
     "level": ["GCSE"],
@@ -146,7 +229,17 @@
       "All 1:1:1:1."
     ],
     "tags": ["reactivity_series"],
-    "source": "AQA-8462"
+    "source": "AQA-8462",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "Zn", "moles": 0.1 }, "ask": { "species": "Cu" } }
+      ],
+      "mass_ratios": [
+        { "given": { "species": "CuSO4", "mass_g": 159.6 }, "ask": { "species": "ZnSO4" } }
+      ],
+      "atom_economy": true
+    },
+    "media": { "video_queries": ["zinc in copper sulfate displacement reaction color change"] }
   },
   {
     "id": "displacement_fe_cuso4",
@@ -161,10 +254,20 @@
       "All coefficients 1."
     ],
     "tags": ["reactivity_series"],
-    "source": "AQA-8462"
+    "source": "AQA-8462",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "Fe", "moles": 0.1 }, "ask": { "species": "Cu" } }
+      ],
+      "mass_ratios": [
+        { "given": { "species": "CuSO4", "mass_g": 159.6 }, "ask": { "species": "Cu" } }
+      ],
+      "atom_economy": true
+    },
+    "media": { "video_queries": ["iron nail copper sulfate displacement reaction"] }
   },
 
-  /* ---------- THERMAL DECOMPOSITION (GCSE) ---------- */
+  /* ---------- THERMAL DECOMPOSITION ---------- */
   {
     "id": "thermal_decomp_caco3",
     "level": ["GCSE"],
@@ -177,7 +280,17 @@
       "All 1:1:1."
     ],
     "tags": ["lime_cycle"],
-    "source": "AQA-8462"
+    "source": "AQA-8462",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "CaCO3", "moles": 1 }, "ask": { "species": "CO2" } }
+      ],
+      "yield_questions": [
+        { "given": { "species": "CaCO3", "mass_g": 50 }, "ask": { "species": "CaO" }, "expected_yield_percent": 80 }
+      ],
+      "atom_economy": true
+    },
+    "media": { "video_queries": ["thermal decomposition of calcium carbonate lime kiln demo"] }
   },
   {
     "id": "thermal_decomp_kclo3",
@@ -188,79 +301,22 @@
     "products": ["KCl", "O2"],
     "hint_steps": [
       "Chlorate decomposes to chloride + O2.",
-      "Start with O2 even number → 3 O2 on right.",
+      "Start with an even number of O on right: 3 O2.",
       "Balance K and Cl with 2 KClO3.",
       "Final: 2 KClO3 → 2 KCl + 3 O2."
     ],
     "tags": ["oxygen_source"],
-    "source": "AQA-8462"
+    "source": "AQA-8462",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "KClO3", "moles": 2 }, "ask": { "species": "O2" } }
+      ],
+      "atom_economy": false
+    },
+    "media": { "video_queries": ["decomposition of potassium chlorate oxygen production"] }
   },
 
-  /* ---------- OXIDATION / FORMATION (GCSE) ---------- */
-  {
-    "id": "oxidation_fe_oxygen",
-    "level": ["GCSE"],
-    "topic": "oxidation",
-    "difficulty": "core",
-    "reactants": ["Fe", "O2"],
-    "products": ["Fe2O3"],
-    "hint_steps": [
-      "Target Fe2O3.",
-      "Balance Fe → 4 Fe gives 2 Fe2O3.",
-      "Balance O → needs 3 O2."
-    ],
-    "tags": ["rusting_idealised"],
-    "source": "AQA-8462"
-  },
-
-  /* ---------- GAS TESTS / SIMPLE SYNTHESIS (GCSE) ---------- */
-  {
-    "id": "gas_hydrogen_from_acid_metal",
-    "level": ["GCSE"],
-    "topic": "gas_tests",
-    "difficulty": "starter",
-    "reactants": ["Mg", "HCl"],
-    "products": ["MgCl2", "H2"],
-    "hint_steps": [
-      "Metal + acid → salt + hydrogen.",
-      "Mg2+ needs 2 Cl- → MgCl2.",
-      "H+ balance → 2 HCl."
-    ],
-    "tags": ["hydrogen_test"],
-    "source": "AQA-8462"
-  },
-  {
-    "id": "gas_co2_from_acid_carbonate",
-    "level": ["GCSE"],
-    "topic": "gas_tests",
-    "difficulty": "starter",
-    "reactants": ["CaCO3", "HCl"],
-    "products": ["CaCl2", "CO2", "H2O"],
-    "hint_steps": [
-      "Carbonate + acid → CO2 + H2O + salt.",
-      "Ca2+ pairs with 2 Cl- → CaCl2.",
-      "H balance → 2 HCl."
-    ],
-    "tags": ["limewater_test"],
-    "source": "AQA-8462"
-  },
-
-  /* ---------- HYDRATES (ALevel & GCSE extension) ---------- */
-  {
-    "id": "alum_hydrate",
-    "level": ["ALevel", "GCSE"],
-    "topic": "hydrates",
-    "difficulty": "stretch",
-    "reactants": ["Al2(SO4)3·18H2O"],
-    "products": ["Al2(SO4)3", "H2O"],
-    "hint_steps": [
-      "Treat ‘·18H2O’ as water of crystallisation.",
-      "Move 18 H2O to products when heating.",
-      "All coefficients 1 except water."
-    ],
-    "tags": ["water_of_crystallisation"],
-    "source": "AQA-7405"
-  },
+  /* ---------- HYDRATES ---------- */
   {
     "id": "copper_ii_sulfate_pentahydrate",
     "level": ["GCSE", "ALevel"],
@@ -274,10 +330,17 @@
       "All other coefficients 1."
     ],
     "tags": ["water_of_crystallisation"],
-    "source": "AQA-8462"
+    "source": "AQA-8462",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "CuSO4·5H2O", "moles": 1 }, "ask": { "species": "H2O" } }
+      ],
+      "atom_economy": true
+    },
+    "media": { "video_queries": ["copper sulfate pentahydrate dehydration heating"] }
   },
 
-  /* ---------- REDOX (ALevel ionic equations & titrations) ---------- */
+  /* ---------- REDOX / TITRATIONS ---------- */
   {
     "id": "redox_mno4_fe2_acidic",
     "level": ["ALevel"],
@@ -293,7 +356,12 @@
     ],
     "tags": ["titration", "ionic_equation"],
     "source": "AQA-7405",
-    "notes": "Net ionic; exclude spectator anions."
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "MnO4^-", "moles": 0.002 }, "ask": { "species": "Fe^2+" } }
+      ]
+    },
+    "media": { "video_queries": ["permanganate titration iron ii demo"] }
   },
   {
     "id": "redox_dichromate_fe2_acidic",
@@ -309,7 +377,13 @@
       "Balance O with H2O and H with H+."
     ],
     "tags": ["titration", "ionic_equation"],
-    "source": "AQA-7405"
+    "source": "AQA-7405",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "Cr2O7^2-", "moles": 0.001 }, "ask": { "species": "Fe^2+" } }
+      ]
+    },
+    "media": { "video_queries": ["dichromate titration iron ii orange to green"] }
   },
   {
     "id": "iodine_thiosulfate",
@@ -320,29 +394,20 @@
     "products": ["I^-", "S4O6^2-"],
     "hint_steps": [
       "I2 is reduced to 2 I^- (gain 2 e^-).",
-      "Two thiosulfate donate 2 e^- → 2 S2O3^2- → S4O6^2-.",
+      "Two thiosulfate donate 2 e^- → S4O6^2-.",
       "Overall: I2 + 2 S2O3^2- → 2 I^- + S4O6^2-."
     ],
     "tags": ["titration", "ionic_equation"],
-    "source": "AQA-7405"
-  },
-  {
-    "id": "disproportionation_kmno4_alkaline",
-    "level": ["ALevel"],
-    "topic": "redox",
-    "difficulty": "stretch",
-    "reactants": ["KMnO4"],
-    "products": ["K2MnO4", "MnO2", "O2"],
-    "hint_steps": [
-      "Mn(VII) disproportionates in base.",
-      "Target Mn(VI) and Mn(IV) products.",
-      "Balance O2 with even count; then K and Mn."
-    ],
-    "tags": ["disproportionation"],
-    "source": "AQA-7405"
+    "source": "AQA-7405",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "I2", "moles": 0.002 }, "ask": { "species": "S2O3^2-" } }
+      ]
+    },
+    "media": { "video_queries": ["iodine thiosulfate titration starch endpoint blue"] }
   },
 
-  /* ---------- ELECTROLYSIS (GCSE/ALevel ionic half equations) ---------- */
+  /* ---------- ELECTROLYSIS ---------- */
   {
     "id": "electrolysis_na_cl_molten_overall",
     "level": ["GCSE"],
@@ -355,24 +420,16 @@
       "Overall from half-equations: 2 NaCl → 2 Na + Cl2."
     ],
     "tags": ["overall_cell_reaction"],
-    "source": "AQA-8462"
-  },
-  {
-    "id": "electrolysis_water_acidic_half",
-    "level": ["ALevel", "GCSE"],
-    "topic": "electrolysis",
-    "difficulty": "core",
-    "reactants": ["H2O"],
-    "products": ["H2", "O2"],
-    "hint_steps": [
-      "Acidic water electrolysis overall:",
-      "2 H2O → 2 H2 + O2 (from 2H+ + 2e- and O2 + 4H+ + 4e-)."
-    ],
-    "tags": ["overall_cell_reaction"],
-    "source": "AQA-7405"
+    "source": "AQA-8462",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "NaCl", "moles": 2 }, "ask": { "species": "Cl2" } }
+      ]
+    },
+    "media": { "video_queries": ["electrolysis molten sodium chloride demo"] }
   },
 
-  /* ---------- INDUSTRIAL SNIPPETS (GCSE/ALevel context) ---------- */
+  /* ---------- INDUSTRIAL ---------- */
   {
     "id": "haber_ammonia_overall",
     "level": ["GCSE", "ALevel"],
@@ -385,7 +442,14 @@
       "Balance N first, then H."
     ],
     "tags": ["equilibrium", "energy"],
-    "source": "AQA-7405"
+    "source": "AQA-7405",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "N2", "moles": 1 }, "ask": { "species": "NH3" } }
+      ],
+      "atom_economy": true
+    },
+    "media": { "video_queries": ["haber process ammonia plant animation industrial"] }
   },
   {
     "id": "contact_so2_to_so3_overall",
@@ -399,6 +463,81 @@
       "Even O helps balancing."
     ],
     "tags": ["equilibrium", "vanadium_v_oxide"],
-    "source": "AQA-7405"
+    "source": "AQA-7405",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "SO2", "moles": 2 }, "ask": { "species": "SO3" } }
+      ],
+      "atom_economy": true
+    },
+    "media": { "video_queries": ["contact process SO2 to SO3 vanadium v oxide catalyst"] }
+  },
+
+  /* ---------- DEMO / HOOKS ---------- */
+  {
+    "id": "thermite_fe2o3_al",
+    "level": ["GCSE", "ALevel"],
+    "topic": "demonstrations",
+    "difficulty": "stretch",
+    "reactants": ["Fe2O3", "Al"],
+    "products": ["Fe", "Al2O3"],
+    "hint_steps": [
+      "Al reduces Fe2O3 to Fe; Al is oxidised to Al2O3.",
+      "Balance O first via Al2O3, then Fe and Al.",
+      "Fe2O3 + 2 Al → 2 Fe + Al2O3."
+    ],
+    "tags": ["thermite", "exothermic"],
+    "source": "Demonstration",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "Fe2O3", "moles": 1 }, "ask": { "species": "Fe" } }
+      ],
+      "mass_ratios": [
+        { "given": { "species": "Al", "mass_g": 54.0 }, "ask": { "species": "Fe" } }
+      ],
+      "atom_economy": true
+    },
+    "media": { "video_queries": ["thermite reaction school demo molten iron"] }
+  },
+  {
+    "id": "alkali_metal_water_cs",
+    "level": ["GCSE", "ALevel"],
+    "topic": "demonstrations",
+    "difficulty": "core",
+    "reactants": ["Cs", "H2O"],
+    "products": ["CsOH", "H2"],
+    "hint_steps": [
+      "Alkali metal + water → hydroxide + hydrogen.",
+      "Balance → 2 Cs + 2 H2O → 2 CsOH + H2."
+    ],
+    "tags": ["alkali_metals", "reactivity_trend"],
+    "source": "Demonstration",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "Cs", "moles": 2 }, "ask": { "species": "H2" } }
+      ]
+    },
+    "media": { "video_queries": ["cesium in water reaction demo explosion"] }
+  },
+  {
+    "id": "elephant_toothpaste_h2o2_ki",
+    "level": ["GCSE"],
+    "topic": "demonstrations",
+    "difficulty": "starter",
+    "reactants": ["H2O2"],
+    "products": ["H2O", "O2"],
+    "hint_steps": [
+      "Catalytic decomposition of hydrogen peroxide.",
+      "Overall: 2 H2O2 → 2 H2O + O2."
+    ],
+    "tags": ["catalysis", "decomposition"],
+    "source": "Demonstration",
+    "stoich": {
+      "mole_ratios": [
+        { "given": { "species": "H2O2", "moles": 2 }, "ask": { "species": "O2" } }
+      ],
+      "atom_economy": true
+    },
+    "media": { "video_queries": ["elephant toothpaste demo hydrogen peroxide potassium iodide surfactant"] }
   }
 ]
