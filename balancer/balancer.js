@@ -278,6 +278,60 @@ function balancedEqText(eq){
     return unmaskedEqText(eq);
   }
 }
+function getHintsForEq(eq){
+  // Prefer explicit hint_steps from data
+  const steps = Array.isArray(eq?.hint_steps) ? eq.hint_steps.slice() : [];
+
+  // Graceful fallback if none present
+  if(steps.length === 0){
+    return [
+      'Start by counting atoms on each side. Pick one element to balance first.',
+      'If a polyatomic ion appears unchanged on both sides, treat it as a unit.',
+      'Balance elements that appear in fewest places first.',
+      'Leave H and O until last (they often appear in many places).',
+    ];
+  }
+  return steps;
+}
+
+function resetHints(eq){
+  TEACH.hCache = getHintsForEq(eq);
+  TEACH.hIndex = 0;
+  renderHints();
+}
+
+function revealNextHint(){
+  if(TEACH.hIndex < TEACH.hCache.length){
+    TEACH.hIndex++;
+    renderHints();
+  }
+}
+
+function revealAllHints(){
+  TEACH.hIndex = TEACH.hCache.length;
+  renderHints();
+}
+
+function renderHints(){
+  if(!TEACH.on){ hintPanel.hidden = true; return; }
+  hintPanel.hidden = false;
+
+  if(!TEACH.hCache || TEACH.hCache.length === 0){
+    hintList.innerHTML = `<li class="revealed">No hints available for this equation yet.</li>`;
+    btnHintN.disabled = true; btnHintAll.disabled = true; btnHintR.disabled = false;
+    return;
+  }
+
+  // Build list where first hIndex are "revealed"
+  const items = TEACH.hCache.map((txt, i) =>
+    `<li class="${i < TEACH.hIndex ? 'revealed' : 'pending'}">${i+1}. ${txt}</li>`
+  ).join('');
+
+  hintList.innerHTML = items;
+  btnHintN.disabled   = TEACH.hIndex >= TEACH.hCache.length;
+  btnHintAll.disabled = TEACH.hIndex >= TEACH.hCache.length;
+  btnHintR.disabled   = TEACH.hIndex === 0;
+}
 
 
 function renderCard(){
@@ -287,9 +341,10 @@ function renderCard(){
   eqTags.innerHTML   = `
     <span class="badge">${(eq.level||[]).join(', ')||'—'}</span>
     <span class="badge">${prettyLabel(eq.topic||'misc')}</span>
-    <span class="badge">${(eq.difficulty||'core')}</span>
-  `;
+    <span class="badge">${(eq.difficulty||'core')}</span>`;
+resetHints(eq);
 }
+
 function nextEq(){ if(TEACH.ids.length){ TEACH.index=(TEACH.index+1)%TEACH.ids.length; renderCard(); } }
 function prevEq(){ if(TEACH.ids.length){ TEACH.index=(TEACH.index-1+TEACH.ids.length)%TEACH.ids.length; renderCard(); } }
 function shuffleEq(){ for(let i=TEACH.ids.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [TEACH.ids[i],TEACH.ids[j]]=[TEACH.ids[j],TEACH.ids[i]]; } TEACH.index=0; renderCard(); }
@@ -322,13 +377,15 @@ function renderCardFromBoxesOrCurrent(){
   const tmp=eqFromBoxes(); if(!tmp){ eqText.textContent='—'; eqTags.innerHTML=''; return; }
   eqText.textContent = TEACH.masked ? maskEqText(tmp) : balancedEqText(tmp);
   eqTags.innerHTML   = `<span class="badge">Custom</span>`;
+resetHints(tmp);
 }
 
 teacherToggle?.addEventListener('change', ()=>{
   TEACH.on = teacherToggle.checked;
   teacherBar.hidden = !TEACH.on;
   eqCard.hidden     = !TEACH.on;
-  if(TEACH.on){
+  hintPanel.hidden = !TEACH.on;
+   if(TEACH.on){
     buildSets(); hydrateSetSelect();
     renderCardFromBoxesOrCurrent();
     refreshMaskButton();
@@ -341,6 +398,9 @@ btnPrev   ?.addEventListener('click', prevEq);
 btnShuffle?.addEventListener('click', shuffleEq);
 btnMask   ?.addEventListener('click', toggleMask);
 btnLoadBoxes?.addEventListener('click', loadToBoxes);
+btnHintN ?.addEventListener('click', revealNextHint);
+btnHintAll?.addEventListener('click', revealAllHints);
+btnHintR ?.addEventListener('click', ()=> resetHints(currentEq() || eqFromBoxes() || { hint_steps: [] }));
 
 // Live update card when typing in boxes (Teacher Mode ON)
 document.addEventListener('input', e=>{
