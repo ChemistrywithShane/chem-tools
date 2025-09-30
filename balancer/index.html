@@ -46,7 +46,7 @@
     
   </section>
   <section class="panel examples">
-  <h2>Examples</h2>
+  <h2>Examples <label class="teacher-toggle"><input type="checkbox" id="teacherMode"> 👩‍🏫 Teacher Mode</label></h2>
   <div class="examples-row">
     <label>Level
       <select id="levelSelect">
@@ -70,6 +70,37 @@
 
     <button id="loadExample">Load</button>
   </div>
+
+  <!-- Teacher Mode controls (hidden until toggled on) -->
+<div id="teacherBar" class="teacher-bar" hidden>
+  <label>Set
+    <select id="setSelect"><!-- populated by JS --></select>
+  </label>
+  <label>Difficulty
+    <select id="diffSelect">
+      <option value="ALL" selected>All</option>
+      <option value="starter">Starter</option>
+      <option value="core">Core</option>
+      <option value="stretch">Stretch</option>
+    </select>
+  </label>
+
+  <div class="teacher-actions">
+    <button id="prevEq">◀ Previous</button>
+    <button id="nextEq">Next ▶</button>
+    <button id="shuffleEq" class="ghost">Shuffle</button>
+    <button id="toggleMask" class="ghost">Hide coefficients</button>
+    <button id="loadToBoxes" class="primary">Load into boxes</button>
+  </div>
+</div>
+
+<!-- Big, projector-friendly card -->
+<div id="equationCard" class="equation-card" hidden>
+  <div class="eq-text mono" id="eqText">—</div>
+  <div class="eq-tags" id="eqTags"></div>
+</div>
+  
+    
 </section>
 
   <section class="panel actions">
