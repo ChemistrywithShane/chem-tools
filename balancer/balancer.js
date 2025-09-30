@@ -279,27 +279,45 @@ function updateIonPreview(){
   const a = ionAnSel?.value  !== '' ? ANIONS[Number(ionAnSel.value)]  : null;
   if(!c || !a){ ionPrev.textContent = '—'; updateIonButtons(); return; }
 
-  // Lowest common multiple method
+  // Helpers
+  const cleanBase = (ion) => {
+    // prefer explicit formula field if you add one later
+    let base = (ion.formula || ion.display || ion.id);
+    // strip spaces and charge tails like ^2-, ^+, trailing +/-
+    base = base.replace(/\s+/g,'').replace(/\^.*$/,'').replace(/[+−-]+$/,'');
+    // convert digits to subscripts for preview
+    base = base.replace(/\d/g, d => subNum(d));
+    return base.trim();
+  };
+  const isPolyatomic = (base) => {
+    // multiple element symbols OR any internal subscript implies polyatomic
+    const capitals = (base.match(/[A-Z]/g) || []).length;
+    const hasSub = /[₀-₉]/.test(base);
+    return capitals > 1 || hasSub;
+  };
+
+  // LCM method for neutral compound
   const qCat = Math.abs(c.charge);
   const qAn  = Math.abs(a.charge);
   const mult = lcm(qCat, qAn);
   const nCat = mult / qCat;
   const nAn  = mult / qAn;
 
-  // Parentheses option for polyatomics
   const useParens = $('#ionAddParens').checked;
-  const formatIon = (ion, n) => {
-    let base = ion.display.replace(/\^.*$/,''); // strip charge from display
-    if(useParens && ion.id.includes('_')) base = '('+base+')'; // crude polyatomic test
-    return base + (n>1 ? subNum(n) : '');
+
+  const fmt = (ion, n) => {
+    let base = cleanBase(ion);
+    if (useParens && n > 1 && isPolyatomic(base)) base = '(' + base + ')';
+    return base + (n > 1 ? subNum(n) : '');
   };
 
-  const formula = formatIon(c,nCat) + formatIon(a,nAn);
+  const formula = fmt(c, nCat) + fmt(a, nAn);
 
-  ionPrev.textContent = `${c.display} + ${a.display} → ${formula}`;
-  ionPrev.dataset.formula = formula; // stash for insertion
+  ionPrev.textContent = `${cleanBase(c)} + ${cleanBase(a)} → ${formula}`;
+  ionPrev.dataset.formula = formula; // stash for insertion in 2D
   updateIonButtons();
 }
+
 
 
 const btnAddR = $('#ionInsertReactant');
