@@ -198,3 +198,18 @@ $('#clear-products').onclick = () => {
 };
 
 }
+function buildCompound(cation, anion) {
+  const qCat = Math.abs(cation.charge);
+  const qAn = Math.abs(anion.charge);
+  const lcm = (a,b)=> a*b/gcd(a,b);
+  const gcd = (a,b)=> b ? gcd(b, a%b) : a;
+
+  const mult = lcm(qCat, qAn);
+  const nCat = mult / qCat;
+  const nAn = mult / qAn;
+
+  return (cation.display.replace(/[^A-Za-z0-9()]/g,'')) +
+         (nCat>1 ? nCat : '') +
+         (anion.display.replace(/[^A-Za-z0-9()]/g,'')) +
+         (nAn>1 ? nAn : '');
+}
