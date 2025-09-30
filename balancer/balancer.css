@@ -61,3 +61,12 @@ button.small{ padding:8px 10px; font-weight:600; border-style:solid; }
 
 .modal__foot{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-top:1px solid var(--border); }
 .modal__actions{ display:flex; gap:8px; }
+/* ---------- Teacher Mode ---------- */
+.teacher-toggle{ font-size:12px; margin-left:10px; font-weight:600; display:inline-flex; gap:6px; align-items:center; }
+.teacher-bar{ margin-top:10px; display:grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:10px; align-items:end; }
+.teacher-bar label{ display:flex; flex-direction:column; gap:4px; font-weight:600; }
+.teacher-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+.equation-card{ margin-top:12px; border:1px solid var(--border); border-radius:14px; padding:18px; background:#fff; box-shadow:0 6px 16px rgba(0,0,0,.05); }
+.eq-text{ font-size:28px; text-align:center; letter-spacing:0.5px; }
+.eq-tags{ margin-top:8px; display:flex; flex-wrap:wrap; gap:6px; justify-content:center; color:var(--muted); font-size:12px; }
+.eq-box{ display:inline-block; border:1px dashed var(--border); border-radius:10px; padding:0 6px; margin:0 4px; }
