@@ -285,9 +285,7 @@ teacherToggle?.addEventListener('change', () => {
     refreshMaskButton();            // "Hide/Show Balancing Numbers"
   }
 });
- 
 
-});
 
 // Events
 setSelect?.addEventListener('change', ()=> selectSet(setSelect.value, diffSelect.value));
