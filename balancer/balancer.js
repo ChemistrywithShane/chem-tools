@@ -265,31 +265,28 @@ function selectSet(key, difficulty='ALL'){
 }
 function currentEq(){ const id = TEACH.ids[TEACH.index]; return EXAMPLES.find(x=>x.id===id)||null; }
 function maskEqText(eq){
-  const L=(eq.reactants||[]).map(s=>`□ ${s}`).join('  +  ');
-  const R=(eq.products ||[]).map(s=>`□ ${s}`).join('  +  ');
+  const L=(eq.reactants||[]).map(s=>`□ ${formatFormulaForDisplay(s)}`).join('  +  ');
+  const R=(eq.products ||[]).map(s=>`□ ${formatFormulaForDisplay(s)}`).join('  +  ');
   return `${L}  →  ${R}`;
 }
 function unmaskedEqText(eq){
-  const L=(eq.reactants||[]).join('  +  ');
-  const R=(eq.products ||[]).join('  +  ');
+  const L=(eq.reactants||[]).map(s=>formatFormulaForDisplay(s)).join('  +  ');
+  const R=(eq.products ||[]).map(s=>formatFormulaForDisplay(s)).join('  +  ');
   return `${L}  →  ${R}`;
 }
 function balancedEqText(eq){
-  // Compute integer coefficients and print them on the card
   try{
-    // Use current charge toggle if you like; default false
     const charge = $('#chargeToggle')?.checked || false;
-
     const { A } = buildMatrixFromReaction(eq.reactants || [], eq.products || [], charge);
     const v = nullspaceVector(A);
-    if(!v || !v.length) return unmaskedEqText(eq); // graceful fallback
+    if(!v || !v.length) return unmaskedEqText(eq);
 
     const leftLen = (eq.reactants || []).length;
     const left = (eq.reactants || []).map((s,i) =>
-      (v[i] === 1 ? '' : v[i] + ' ') + s
+      (v[i] === 1 ? '' : v[i] + ' ') + formatFormulaForDisplay(s)
     ).join('  +  ');
     const right = (eq.products || []).map((s,i) =>
-      (v[leftLen + i] === 1 ? '' : v[leftLen + i] + ' ') + s
+      (v[leftLen + i] === 1 ? '' : v[leftLen + i] + ' ') + formatFormulaForDisplay(s)
     ).join('  +  ');
 
     return `${left}  →  ${right}`;
@@ -297,6 +294,8 @@ function balancedEqText(eq){
     console.warn('balancedEqText failed:', e);
     return unmaskedEqText(eq);
   }
+}
+
 }
 function getHintsForEq(eq){
   // Prefer explicit hint_steps from data
@@ -366,7 +365,7 @@ function resetPractice(){
 function renderCard(){
   const eq=currentEq();
   if(!eq || TEACH.ids.length===0){ eqText.textContent='—'; eqTags.innerHTML=''; return; }
- eqText.textContent = TEACH.masked ? maskEqText(eq) : balancedEqText(eq);
+ eqText.innerHTML = TEACH.masked ? maskEqText(eq) : balancedEqText(eq);
   eqTags.innerHTML   = `
     <span class="badge">${(eq.level||[]).join(', ')||'—'}</span>
     <span class="badge">${prettyLabel(eq.topic||'misc')}</span>
@@ -405,7 +404,7 @@ function eqFromBoxes(){
 function renderCardFromBoxesOrCurrent(){
   const cur=currentEq(); if(cur){ renderCard(); return; }
   const tmp=eqFromBoxes(); if(!tmp){ eqText.textContent='—'; eqTags.innerHTML=''; return; }
-  eqText.textContent = TEACH.masked ? maskEqText(tmp) : balancedEqText(tmp);
+  eqText.innerHTML = TEACH.masked ? maskEqText(tmp) : balancedEqText(tmp);
   eqTags.innerHTML   = `<span class="badge">Custom</span>`;
 resetHints(tmp);
    resetPractice();
@@ -626,6 +625,16 @@ function exampleLabel(e){
   const topic = e.topic ? prettyLabel(e.topic) : 'Example';
   return `${topic} — ${left} → ${right}`;
 }
+// --- Display formatting: charges as superscripts, digits as subscripts ---
+function formatFormulaForDisplay(str){
+  if(!str) return '';
+  return String(str)
+    // ^2+, ^-, ^3-  -> <sup>2+</sup>, <sup>-</sup>, <sup>3-</sup>
+    .replace(/\^([0-9]*)([+-])/g, (_, num, sign) => `<sup>${(num||'')}${sign}</sup>`)
+    // Element + number -> element<sub>number</sub>  (e.g. H2O -> H<sub>2</sub>O)
+    .replace(/([A-Za-z\)])([0-9]+)/g, (_, el, num) => `${el}<sub>${num}</sub>`);
+}
+
 function prettyLabel(s){ return (s||'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 
 // Add/clear/reset
@@ -656,11 +665,13 @@ $('#clear-products').onclick = ()=>{
    BALANCER (matrix solver) + tallies
 -------------------------------------------------*/
 function getSpeciesFrom(selector){ return $$(selector+' .species').map(i=>i.value.trim()).filter(Boolean); }
+
 function prettyReaction(eq, coeffs, leftLen){
-  const L = eq.slice(0,leftLen).map((s,i)=> (coeffs[i]===1?'':coeffs[i]+' ') + s).join(' + ');
-  const R = eq.slice(leftLen).map((s,i)=> (coeffs[leftLen+i]===1?'':coeffs[leftLen+i]+' ') + s).join(' + ');
+  const L = eq.slice(0,leftLen).map((s,i)=> (coeffs[i]===1?'':coeffs[i]+' ') + formatFormulaForDisplay(s)).join(' + ');
+  const R = eq.slice(leftLen).map((s,i)=> (coeffs[leftLen+i]===1?'':coeffs[leftLen+i]+' ') + formatFormulaForDisplay(s)).join(' + ');
   return L + ' → ' + R;
 }
+
 $('#balance').onclick = ()=>{
   const reactants = getSpeciesFrom('#reactants');
   const products  = getSpeciesFrom('#products');
@@ -672,7 +683,7 @@ $('#balance').onclick = ()=>{
     const {A, species} = buildMatrixFromReaction(reactants, products, chargeMode);
     const v = nullspaceVector(A);
     if(!v || v.some(x=>!Number.isFinite(x))){ $('#status').textContent='Could not balance.'; return; }
-    $('#result').textContent = prettyReaction(species, v, reactants.length);
+   $('#result').innerHTML = prettyReaction(species, v, reactants.length);
     $('#status').textContent = '✔ Balanced';
     renderTallies(reactants, products, v, chargeMode);
   }catch(e){
