@@ -149,15 +149,25 @@ function hydrateTopicSelect(){
 }
 function populateExampleList(){
   const lvl = $('#levelSelect').value, topic = $('#topicSelect').value, exSel = $('#exampleSelect');
+
+  // Normalise “A Level” vs “ALevel”, handle spacing/case
+  const norm = s => (s || '').replace(/\s+/g, '').toLowerCase();
+  const lvlNorm = norm(lvl);
+
   const filtered = EXAMPLES.filter(e=>{
-    const okL = (lvl==='ALL') || (e.level||[]).includes(lvl);
-    const okT = (topic==='ALL') || (e.topic===topic);
+    const okL = (lvl === 'ALL') || (e.level || []).some(L => norm(L) === lvlNorm);
+    const okT = (topic === 'ALL') || (e.topic === topic);
     return okL && okT;
   });
-  if(filtered.length===0){ exSel.innerHTML = `<option value="" selected>(no examples for this filter)</option>`; return; }
+
+  if(filtered.length===0){
+    exSel.innerHTML = `<option value="" selected>(no examples for this filter)</option>`;
+    return;
+  }
   exSel.innerHTML = `<option value="" selected>— select an example —</option>` +
-      filtered.map(e=>`<option value="${e.id}">${exampleLabel(e)}</option>`).join('');
+    filtered.map(e=>`<option value="${e.id}">${exampleLabel(e)}</option>`).join('');
 }
+
 $('#levelSelect').addEventListener('change', populateExampleList);
 $('#topicSelect').addEventListener('change', populateExampleList);
 
